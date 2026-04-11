@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'common',
     'botapp',
     'user',
+    'business',
+    'ticket'
 ]
 
 MIDDLEWARE = [
