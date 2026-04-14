@@ -129,3 +129,16 @@ MEDIA_ROOT = BASE_DIR.joinpath("media")
 
 
 AUTH_USER_MODEL = "user.MyUser"
+
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+
+# Messages tags
+from django.contrib.messages import constants as messages_constants
+MESSAGE_TAGS = {
+    messages_constants.DEBUG: 'info',
+    messages_constants.INFO: 'info',
+    messages_constants.SUCCESS: 'success',
+    messages_constants.WARNING: 'warning',
+    messages_constants.ERROR: 'error',
+}

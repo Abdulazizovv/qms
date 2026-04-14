@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <h1>Dashboard</h1>
+    <p>Xush kelibsiz, {{ user.first_name|default:user.phone }}!</p>
+</div>
+<div class="grid grid-4 fade-in-2">
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Bizneslar</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Filiallar</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Bugungi ticketlar</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Operatorlar</div></div>
+</div>
+{% endblock %}
