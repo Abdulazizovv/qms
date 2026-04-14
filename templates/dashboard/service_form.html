@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Xizmat {{ action }}{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% url 'business:detail' business.pk %}" style="color:var(--text-muted);display:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+            <h1>Xizmat {{ action }}</h1>
+            <p>{{ business.title }} — {{ branch.title }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:600px" class="fade-in-2">
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <div class="grid grid-2">
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Xizmat nomi *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ticket prefiks *</label>
+                    {{ form.ticket_prefix }}
+                    <span class="form-hint">Masalan: A, B, VIP</span>
+                    {% if form.ticket_prefix.errors %}<span class="form-error">{{ form.ticket_prefix.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Xizmat vaqti (daqiqa) *</label>
+                    {{ form.estimated_time_minutes }}
+                    {% if form.estimated_time_minutes.errors %}<span class="form-error">{{ form.estimated_time_minutes.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Narx (so'm)</label>
+                    {{ form.price }}
+                    {% if form.price.errors %}<span class="form-error">{{ form.price.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Holat</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<span class="form-error">{{ form.status.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Tavsif</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<span class="form-error">{{ form.description.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Talab qilinadigan hujjatlar</label>
+                    {{ form.requirements }}
+                    {% if form.requirements.errors %}<span class="form-error">{{ form.requirements.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            <hr class="divider">
+            <div style="display:flex;gap:12px">
+                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
+                <a href="{% url 'business:detail' business.pk %}" class="btn btn-secondary">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

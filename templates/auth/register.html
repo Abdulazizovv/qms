@@ -1,0 +1,118 @@
+{% extends "auth/base_auth.html" %}
+
+{% block title %}Ro'yxatdan o'tish{% endblock %}
+
+{% block content %}
+<div class="auth-box-header">
+    <h1>Hisob yarating 🚀</h1>
+    <p>Bir necha daqiqada boshlang</p>
+</div>
+
+<form method="POST" action="{% url 'auth:register' %}">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <div class="form-group">
+        <label class="form-label">Ism</label>
+        <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input
+                type="text"
+                name="first_name"
+                class="form-control {% if form.first_name.errors %}is-error{% endif %}"
+                placeholder="Ismingiz"
+                value="{{ form.first_name.value|default:'' }}"
+                autofocus
+            >
+        </div>
+        {% if form.first_name.errors %}
+        <span class="form-error">{{ form.first_name.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Telefon raqam</label>
+        <div class="input-wrap">
+            <span class="input-icon">📱</span>
+            <input
+                type="text"
+                name="phone"
+                class="form-control {% if form.phone.errors %}is-error{% endif %}"
+                placeholder="+998901234567"
+                value="{{ form.phone.value|default:'' }}"
+            >
+        </div>
+        {% if form.phone.errors %}
+        <span class="form-error">{{ form.phone.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Rol tanlang</label>
+        <div class="role-grid">
+            <div class="role-card">
+                <input type="radio" name="user_type" id="role_owner" value="owner"
+                    {% if form.user_type.value == 'owner' or not form.user_type.value %}checked{% endif %}>
+                <label class="role-label" for="role_owner">
+                    <span class="role-emoji">🏢</span>
+                    <span class="role-text">Biznes egasi</span>
+                </label>
+            </div>
+            <div class="role-card">
+                <input type="radio" name="user_type" id="role_client" value="client"
+                    {% if form.user_type.value == 'client' %}checked{% endif %}>
+                <label class="role-label" for="role_client">
+                    <span class="role-emoji">👥</span>
+                    <span class="role-text">Mijoz</span>
+                </label>
+            </div>
+        </div>
+        {% if form.user_type.errors %}
+        <span class="form-error">{{ form.user_type.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Parol</label>
+        <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+                type="password"
+                name="password1"
+                class="form-control {% if form.password1.errors %}is-error{% endif %}"
+                placeholder="Kuchli parol yarating"
+            >
+        </div>
+        {% if form.password1.errors %}
+        <span class="form-error">{{ form.password1.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Parolni takrorlang</label>
+        <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+                type="password"
+                name="password2"
+                class="form-control {% if form.password2.errors %}is-error{% endif %}"
+                placeholder="Parolni qayta kiriting"
+            >
+        </div>
+        {% if form.password2.errors %}
+        <span class="form-error">{{ form.password2.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn">
+        Hisob yaratish →
+    </button>
+</form>
+
+<div class="auth-link">
+    Hisobingiz bormi? <a href="{% url 'auth:login' %}">Kiring</a>
+</div>
+{% endblock %}

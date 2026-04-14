@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Biznes {{ action }}{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}" style="color:var(--text-muted);display:flex;align-items:center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+            <h1>Biznes {{ action }}</h1>
+            <p>Biznes ma'lumotlarini to'ldiring</p>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:560px" class="fade-in-2">
+    <div class="card">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label">Biznes nomi *</label>
+                {{ form.title }}
+                {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Biznes haqida</label>
+                {{ form.about }}
+                {% if form.about.errors %}<span class="form-error">{{ form.about.errors.0 }}</span>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Logo (ixtiyoriy)</label>
+                {{ form.logo }}
+                {% if form.logo.errors %}<span class="form-error">{{ form.logo.errors.0 }}</span>{% endif %}
+            </div>
+
+            <hr class="divider">
+            <div style="display:flex;gap:12px">
+                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
+                <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}"
+                   class="btn btn-secondary">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

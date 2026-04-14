@@ -1,3 +1,52 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from user.forms import LoginForm, RegisterForm
 
-# Create your views here.
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return _redirect_by_role(request.user)
+
+    form = LoginForm(request.POST or None, request=request)
+
+    if request.method == 'POST' and form.is_valid():
+        user = form.cleaned_data['user']
+        login(request, user)
+        messages.success(request, f"Xush kelibsiz, {user.first_name or user.phone}!")
+        return _redirect_by_role(user)
+
+    return render(request, 'auth/login.html', {'form': form})
+
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return _redirect_by_role(request.user)
+
+    form = RegisterForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        user = form.save()
+        login(request, user)
+        messages.success(request, "Hisob muvaffaqiyatli yaratildi!")
+        return _redirect_by_role(user)
+
+    return render(request, 'auth/register.html', {'form': form})
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Tizimdan muvaffaqiyatli chiqdingiz")
+    return redirect('auth:login')
+
+
+def _redirect_by_role(user):
+    """User roliga qarab yo'naltirish"""
+    if user.user_type == 'owner':
+        return redirect('dashboard:index')
+    elif user.user_type == 'operator':
+        return redirect('operator:panel')
+    else:
+        return redirect('client:home')

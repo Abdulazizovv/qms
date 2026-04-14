@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}O'chirishni tasdiqlash{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:4rem auto" class="fade-in">
+    <div class="card text-center" style="padding:2.5rem">
+        <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
+        <h2 style="font-weight:700;font-size:1.25rem;margin-bottom:0.75rem">Haqiqatan o'chirmoqchimisiz?</h2>
+        <p style="color:var(--text-muted);margin-bottom:0.5rem">
+            <strong style="color:var(--text)">{{ obj }}</strong>
+        </p>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:2rem">
+            Bu {{ type }} o'chirilgandan so'ng, uni tiklash mumkin emas.
+        </p>
+        <form method="POST" style="display:flex;gap:12px;justify-content:center">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+            <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}"
+               class="btn btn-secondary">Bekor qilish</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Operator {{ action }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.services-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:8px; margin-top:6px; }
+.service-check { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:border-color 0.2s; }
+.service-check:hover { border-color:var(--accent); }
+.service-check input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; cursor:pointer; }
+.service-check input:checked ~ span { color:var(--text); }
+.service-check span { font-size:0.85rem; color:var(--text-dim); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% url 'business:detail' business.pk %}" style="color:var(--text-muted);display:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+            <h1>Operator {{ action }}</h1>
+            <p>{{ business.title }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:600px" class="fade-in-2">
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            {% if not operator %}
+            <!-- Create mode: user info -->
+            <p style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:1rem">Foydalanuvchi ma'lumotlari</p>
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label">Ism *</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}<span class="form-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefon *</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}<span class="form-error">{{ form.phone.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Parol *</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<span class="form-error">{{ form.password.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+            <hr class="divider">
+            {% endif %}
+
+            <p style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:1rem">Operator sozlamalari</p>
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label">Filial *</label>
+                    {{ form.branch }}
+                    {% if form.branch.errors %}<span class="form-error">{{ form.branch.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stol raqami *</label>
+                    {{ form.desk_number }}
+                    {% if form.desk_number.errors %}<span class="form-error">{{ form.desk_number.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+
+            {% if operator %}
+            <div class="form-group" style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+                {{ form.is_active }}
+                <label class="form-label" style="margin-bottom:0">Operator faol</label>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label">Xizmatlar</label>
+                <div class="services-list">
+                    {% for checkbox in form.services %}
+                    <label class="service-check">
+                        {{ checkbox.tag }}
+                        <span>{{ checkbox.choice_label }}</span>
+                    </label>
+                    {% empty %}
+                    <p style="color:var(--text-muted);font-size:0.85rem">Avval xizmat qo'shing</p>
+                    {% endfor %}
+                </div>
+                {% if form.services.errors %}<span class="form-error">{{ form.services.errors.0 }}</span>{% endif %}
+            </div>
+
+            <hr class="divider">
+            <div style="display:flex;gap:12px">
+                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
+                <a href="{% url 'business:detail' business.pk %}" class="btn btn-secondary">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
