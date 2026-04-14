@@ -26,4 +26,7 @@ urlpatterns = [
     path('<int:biz_pk>/operators/create/',        views.operator_create, name='operator_create'),
     path('<int:biz_pk>/operators/<int:pk>/edit/', views.operator_edit,   name='operator_edit'),
     path('<int:biz_pk>/operators/<int:pk>/delete/', views.operator_delete, name='operator_delete'),
+
+    # Operator Panel
+    path('operator/panel/', views.operator_panel, name='operator_panel'),
 ]

@@ -1,53 +1,266 @@
 {% extends "base.html" %}
-{% block title %}Biznes {{ action }}{% endblock %}
+{% block title %}{{ business.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-header {
+        display: flex; align-items: center; gap: 16px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    .biz-hero {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 26px; flex-shrink: 0;
+    }
+    .biz-info h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .biz-info p  { font-size: 0.82rem; color: var(--text-muted); margin-top: 3px; }
+
+    .mini-stats {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 1rem; margin-bottom: 2rem;
+    }
+    .mini-stat {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+        text-align: center;
+    }
+    .mini-stat-val {
+        font-size: 1.8rem; font-weight: 800;
+        font-family: var(--mono); color: var(--text);
+        letter-spacing: -0.04em; line-height: 1;
+    }
+    .mini-stat-lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Branch cards */
+    .branch-grid {
+        display: grid; grid-template-columns: repeat(2,1fr);
+        gap: 1rem; margin-bottom: 2rem;
+    }
+    .branch-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        transition: border-color 0.2s;
+    }
+    .branch-card:hover { border-color: var(--border-lite); }
+    .branch-head {
+        display: flex; align-items: center;
+        justify-content: space-between; margin-bottom: 1rem;
+    }
+    .branch-title { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .branch-loc   { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+    .branch-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .service-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 10px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        font-size: 0.75rem; color: var(--text-dim);
+    }
+    .service-pill-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--success);
+    }
+    .service-pill-dot.inactive { background: var(--text-muted); }
+
+    /* Operator table */
+    .section-head {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    .section-title {
+        font-size: 1rem; font-weight: 700;
+        letter-spacing: -0.02em; color: var(--text);
+    }
+    .section-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    @media (max-width: 900px) {
+        .mini-stats   { grid-template-columns: repeat(3,1fr); }
+        .branch-grid  { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header fade-in">
-    <div style="display:flex;align-items:center;gap:12px">
-        <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}" style="color:var(--text-muted);display:flex;align-items:center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+
+<!-- Back + Header -->
+<div class="detail-header fade-in">
+    <a href="{% url 'dashboard:index' %}" style="color:var(--text-muted);display:flex;align-items:center;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="biz-hero">🏢</div>
+    <div class="biz-info" style="flex:1">
+        <h1>{{ business.title }}</h1>
+        <p>{{ business.about|default:"Tavsif kiritilmagan" }}</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="{% url 'business:edit' business.pk %}" class="btn btn-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Tahrirlash
         </a>
-        <div>
-            <h1>Biznes {{ action }}</h1>
-            <p>Biznes ma'lumotlarini to'ldiring</p>
+        <a href="{% url 'business:delete' business.pk %}" class="btn btn-danger btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            O'chirish
+        </a>
+    </div>
+</div>
+
+<!-- Mini stats -->
+<div class="mini-stats fade-in-2">
+    <div class="mini-stat">
+        <div class="mini-stat-val" style="color:var(--accent)">{{ branches.count }}</div>
+        <div class="mini-stat-lbl">Filiallar</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-val" style="color:#10b981">{{ operators.count }}</div>
+        <div class="mini-stat-lbl">Operatorlar</div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-val" style="color:#f59e0b">
+            {% with total=0 %}
+                {% for branch in branches %}{% with cnt=branch.services.count %}{% endwith %}{% endfor %}
+                {{ branches|length }}
+            {% endwith %}
+            —
+        </div>
+        <div class="mini-stat-lbl">Xizmatlar</div>
+    </div>
+</div>
+
+<!-- Branches -->
+<div class="section-head fade-in-2">
+    <div>
+        <div class="section-title">Filiallar</div>
+        <div class="section-sub">{{ branches.count }} ta filial</div>
+    </div>
+    <a href="{% url 'business:branch_create' business.pk %}" class="btn btn-primary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Filial qo'shish
+    </a>
+</div>
+
+{% if branches %}
+<div class="branch-grid fade-in-3">
+    {% for branch in branches %}
+    <div class="branch-card">
+        <div class="branch-head">
+            <div>
+                <div class="branch-title">{{ branch.title }}</div>
+                <div class="branch-loc">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ branch.location|default:"Manzil kiritilmagan" }}
+                </div>
+            </div>
+            <span class="badge {% if branch.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                {% if branch.is_active %}Faol{% else %}Nofaol{% endif %}
+            </span>
+        </div>
+
+        <!-- Services -->
+        {% if branch.services.all %}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
+            {% for svc in branch.services.all %}
+            <div class="service-pill">
+                <div class="service-pill-dot {% if svc.status != 'active' %}inactive{% endif %}"></div>
+                {{ svc.title }}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Xizmat qo'shilmagan</p>
+        {% endif %}
+
+        <div class="branch-actions">
+            <a href="{% url 'business:branch_create' business.pk %}?branch={{ branch.pk }}" class="btn btn-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Xizmat
+            </a>
+            <a href="{% url 'business:service_create' business.pk branch.pk %}" class="btn btn-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Xizmat qo'sh
+            </a>
+            <a href="{% url 'business:branch_edit' business.pk branch.pk %}" class="btn btn-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Tahrirlash
+            </a>
+            <a href="{% url 'business:branch_delete' business.pk branch.pk %}" class="btn btn-danger btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            </a>
         </div>
     </div>
+    {% endfor %}
 </div>
+{% else %}
+<div class="card text-center fade-in-3" style="padding:2.5rem;margin-bottom:2rem">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">🏪</div>
+    <h3 style="font-weight:700;margin-bottom:0.5rem">Hali filial yo'q</h3>
+    <p class="text-muted" style="margin-bottom:1.25rem">Birinchi filialni qo'shing</p>
+    <a href="{% url 'business:branch_create' business.pk %}" class="btn btn-primary" style="display:inline-flex">Filial qo'shish</a>
+</div>
+{% endif %}
 
-<div style="max-width:560px" class="fade-in-2">
-    <div class="card">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-            <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
-            {% endif %}
-
-            <div class="form-group">
-                <label class="form-label">Biznes nomi *</label>
-                {{ form.title }}
-                {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Biznes haqida</label>
-                {{ form.about }}
-                {% if form.about.errors %}<span class="form-error">{{ form.about.errors.0 }}</span>{% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Logo (ixtiyoriy)</label>
-                {{ form.logo }}
-                {% if form.logo.errors %}<span class="form-error">{{ form.logo.errors.0 }}</span>{% endif %}
-            </div>
-
-            <hr class="divider">
-            <div style="display:flex;gap:12px">
-                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
-                <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}"
-                   class="btn btn-secondary">Bekor qilish</a>
-            </div>
-        </form>
+<!-- Operators -->
+<div class="section-head fade-in-3" style="margin-top:0.5rem">
+    <div>
+        <div class="section-title">Operatorlar</div>
+        <div class="section-sub">{{ operators.count }} ta operator</div>
     </div>
+    <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-primary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Operator qo'shish
+    </a>
 </div>
+
+{% if operators %}
+<div class="table-wrap fade-in-4">
+    <table>
+        <thead>
+            <tr>
+                <th>Ism</th>
+                <th>Telefon</th>
+                <th>Filial</th>
+                <th>Stol №</th>
+                <th>Holat</th>
+                <th>Amal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in operators %}
+            <tr>
+                <td style="color:var(--text);font-weight:600">{{ op.user.first_name|default:"—" }} {{ op.user.last_name|default:"" }}</td>
+                <td style="font-family:var(--mono);font-size:0.82rem">{{ op.user.phone }}</td>
+                <td>{{ op.branch.title }}</td>
+                <td style="font-family:var(--mono);color:var(--accent)">№{{ op.desk_number }}</td>
+                <td><span class="badge {% if op.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if op.is_active %}Faol{% else %}Nofaol{% endif %}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px">
+                        <a href="{% url 'business:operator_edit' business.pk op.pk %}" class="btn btn-secondary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </a>
+                        <a href="{% url 'business:operator_delete' business.pk op.pk %}" class="btn btn-danger btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card text-center fade-in-4" style="padding:2rem">
+    <div style="font-size:2rem;margin-bottom:0.75rem">👤</div>
+    <p class="text-muted" style="margin-bottom:1rem">Hali operator qo'shilmagan</p>
+    <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-primary btn-sm" style="display:inline-flex">Operator qo'shish</a>
+</div>
+{% endif %}
+
 {% endblock %}

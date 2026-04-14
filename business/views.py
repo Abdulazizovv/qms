@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+from django.db import transaction
 from business.models import Business, Branch, Service, Operator
 from business.forms import BusinessForm, BranchForm, ServiceForm, OperatorCreateForm, OperatorEditForm
-from ticket.models import Ticket, Session
+from ticket.models import Ticket, Session, SessionStatus, StatusTypes
+from user.models import UserTypes
 from django.utils import timezone
 
 
@@ -13,6 +15,16 @@ def owner_required(view_func):
     @login_required
     def wrapper(request, *args, **kwargs):
         if request.user.user_type != 'owner':
+            return HttpResponseForbidden("Ruxsat yo'q")
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def operator_required(view_func):
+    """Faqat operator tipidagi userlar uchun decorator"""
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if request.user.user_type != UserTypes.OPERATOR:
             return HttpResponseForbidden("Ruxsat yo'q")
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -212,3 +224,185 @@ def operator_delete(request, biz_pk, pk):
         messages.success(request, "Operator o'chirildi")
         return redirect('business:detail', pk=biz_pk)
     return render(request, 'dashboard/confirm_delete.html', {'obj': operator, 'type': 'operator', 'business': business})
+
+
+@operator_required
+def operator_panel(request):
+    operator = get_object_or_404(Operator, user=request.user)
+    is_htmx = request.headers.get("HX-Request") == "true"
+
+    def _get_services():
+        assigned = operator.services.all()
+        return assigned if assigned.exists() else Service.objects.filter(branch=operator.branch)
+
+    def _get_active_session():
+        return (
+            Session.objects.filter(
+                operator=operator,
+                status__in=[SessionStatus.ACTIVE, SessionStatus.PAUSED, SessionStatus.PENDING],
+            )
+            .select_related("service")
+            .order_by("-created_at")
+            .first()
+        )
+
+    def _start_session(active_session, service, now, target_day):
+        if active_session:
+            if active_session.service_id != service.id:
+                messages.warning(
+                    request,
+                    "Sizda aktiv sessiya bor. Avval shu sessiyani tugating yoki davom ettiring.",
+                )
+            else:
+                if active_session.status == SessionStatus.PENDING:
+                    active_session.status = SessionStatus.ACTIVE
+                    active_session.started_at = active_session.started_at or now
+                    active_session.save(update_fields=["status", "started_at"])
+                messages.info(request, "Mavjud sessiya davom ettirildi.")
+            return active_session
+
+        existing_today = Session.objects.filter(operator=operator, date=target_day).first()
+        if existing_today:
+            if existing_today.service_id != service.id:
+                messages.warning(
+                    request,
+                    "Bugun boshqa xizmat bo'yicha sessiya mavjud. Yangi sessiya yaratib bo'lmaydi.",
+                )
+                return None
+            existing_today.status = SessionStatus.ACTIVE
+            existing_today.started_at = existing_today.started_at or now
+            existing_today.closed_at = None
+            existing_today.save(update_fields=["status", "started_at", "closed_at"])
+            messages.success(request, "Sessiya qayta faollashtirildi.")
+            return existing_today
+
+        new_session = Session.objects.create(
+            operator=operator,
+            service=service,
+            status=SessionStatus.ACTIVE,
+            started_at=now,
+        )
+        messages.success(request, "Yangi sessiya yaratildi.")
+        return new_session
+
+    def _resume_session(active_session, now):
+        active_session.status = SessionStatus.ACTIVE
+        active_session.started_at = active_session.started_at or now
+        active_session.save(update_fields=["status", "started_at"])
+        messages.success(request, "Sessiya davom ettirildi.")
+
+    def _pause_session(active_session):
+        active_session.status = SessionStatus.PAUSED
+        active_session.save(update_fields=["status"])
+        messages.info(request, "Sessiya tanaffusga qo'yildi.")
+
+    def _close_session(active_session, now):
+        active_session.status = SessionStatus.CLOSED
+        active_session.closed_at = now
+        active_session.current_ticket = None
+        active_session.save(update_fields=["status", "closed_at", "current_ticket"])
+        messages.success(request, "Sessiya yopildi.")
+
+    def _next_ticket(active_session, now):
+        if active_session.current_ticket and active_session.current_ticket.status == StatusTypes.PROCESS:
+            messages.warning(request, "Avval joriy ticketni yakunlang.")
+            return
+
+        next_ticket = (
+            active_session.tickets.filter(status=StatusTypes.WAITING)
+            .order_by("-is_vip", "created_at")
+            .first()
+        )
+        if not next_ticket:
+            messages.info(request, "Kutilayotgan ticketlar yo'q.")
+            return
+
+        with transaction.atomic():
+            next_ticket.status = StatusTypes.PROCESS
+            next_ticket.called_at = now
+            next_ticket.save(update_fields=["status", "called_at"])
+            active_session.current_ticket = next_ticket
+            active_session.status = SessionStatus.ACTIVE
+            active_session.save(update_fields=["current_ticket", "status"])
+        messages.success(request, f"Ticket chaqirildi: {next_ticket.number}")
+
+    def _finish_ticket(active_session, action, now):
+        current = active_session.current_ticket
+        if not current:
+            messages.warning(request, "Joriy ticket topilmadi.")
+            return
+
+        with transaction.atomic():
+            if action == "done_ticket":
+                current.status = StatusTypes.DONE
+                msg = "Ticket yakunlandi."
+            elif action == "skip_ticket":
+                current.status = StatusTypes.SKIPPED
+                msg = "Ticket o'tkazib yuborildi."
+            else:
+                current.status = StatusTypes.CANCEL
+                msg = "Ticket bekor qilindi."
+            current.finished_at = now
+            current.save(update_fields=["status", "finished_at"])
+            active_session.current_ticket = None
+            active_session.save(update_fields=["current_ticket"])
+        messages.success(request, msg)
+
+    services = _get_services()
+    today = timezone.now().date()
+    active_session = _get_active_session()
+
+    def _build_context():
+        waiting_tickets = []
+        processing_ticket = None
+        done_tickets = []
+        if active_session:
+            waiting_tickets = active_session.tickets.filter(status=StatusTypes.WAITING).order_by(
+                "-is_vip", "created_at"
+            )
+            processing_ticket = active_session.current_ticket
+            done_tickets = active_session.tickets.filter(status=StatusTypes.DONE).order_by("-finished_at")[:5]
+        return {
+            "operator": operator,
+            "services": services,
+            "active_session": active_session,
+            "waiting_tickets": waiting_tickets,
+            "processing_ticket": processing_ticket,
+            "done_tickets": done_tickets,
+        }
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        now = timezone.now()
+
+        if action == "start_session":
+            service_id = request.POST.get("service_id")
+            service = get_object_or_404(Service, id=service_id)
+            if service not in services:
+                messages.error(request, "Bu xizmat sizga biriktirilmagan.")
+            else:
+                active_session = _start_session(active_session, service, now, today)
+
+        elif action == "resume_session" and active_session:
+            _resume_session(active_session, now)
+
+        elif action == "pause_session" and active_session:
+            _pause_session(active_session)
+
+        elif action == "close_session" and active_session:
+            _close_session(active_session, now)
+            active_session = None
+
+        elif action == "next_ticket" and active_session:
+            _next_ticket(active_session, now)
+
+        elif action in {"done_ticket", "skip_ticket", "cancel_ticket"} and active_session:
+            _finish_ticket(active_session, action, now)
+
+        if is_htmx:
+            return render(request, "operator/partials/panel_content.html", _build_context())
+        return redirect("business:operator_panel")
+    if is_htmx:
+        return render(request, "operator/partials/panel_content.html", _build_context())
+
+    return render(request, "operator/panel.html", _build_context())

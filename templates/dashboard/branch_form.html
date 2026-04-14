@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Filial {{ action }}{% endblock %}
+
+{% block content %}
+<div class="page-header fade-in">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% url 'business:detail' business.pk %}" style="color:var(--text-muted);display:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+            <h1>Filial {{ action }}</h1>
+            <p>{{ business.title }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:560px" class="fade-in-2">
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+            <div class="form-group">
+                <label class="form-label">Filial nomi *</label>
+                {{ form.title }}
+                {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Manzil *</label>
+                {{ form.location }}
+                {% if form.location.errors %}<span class="form-error">{{ form.location.errors.0 }}</span>{% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tavsif</label>
+                {{ form.description }}
+                {% if form.description.errors %}<span class="form-error">{{ form.description.errors.0 }}</span>{% endif %}
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:10px">
+                {{ form.is_active }}
+                <label class="form-label" style="margin-bottom:0;cursor:pointer">Filial faol</label>
+            </div>
+
+            <hr class="divider">
+            <div style="display:flex;gap:12px">
+                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
+                <a href="{% url 'business:detail' business.pk %}" class="btn btn-secondary">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

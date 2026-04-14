@@ -458,8 +458,12 @@
                 <i data-lucide="building-2"></i> Bizneslar
             </a></li>
         {% elif user.user_type == 'operator' %}
-            <li><a href="{% url 'operator:panel' %}" {% if 'operator' in request.path %}class="active"{% endif %}>
+            <li><a href="{% url 'business:operator_panel' %}" {% if 'operator' in request.path %}class="active"{% endif %}>
                 <i data-lucide="monitor"></i> Operator Panel
+            </a></li>
+        {% elif user.user_type == 'client' %}
+            <li><a href="{% url 'client:home' %}" {% if request.resolver_match.namespace == 'client' %}class="active"{% endif %}>
+                <i data-lucide="ticket"></i> Navbat olish
             </a></li>
         {% endif %}
     </ul>

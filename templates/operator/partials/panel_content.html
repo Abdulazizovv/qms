@@ -1,0 +1,143 @@
+<div class="op-top">
+    <div>
+        <h1>Operator Panel</h1>
+        <div class="op-sub">{{ operator.user.first_name|default:operator.user.phone }}</div>
+    </div>
+    <div class="op-pill">
+        Filial: {{ operator.branch.title }} • Stol: {{ operator.desk_number }}
+    </div>
+</div>
+
+<div class="op-grid fade-in-2">
+    <div class="op-card">
+        <h3>Sessiya</h3>
+        {% if active_session %}
+            <div class="op-row">
+                <div>
+                    <div style="font-weight:700;color:var(--text)">{{ active_session.service.title }}</div>
+                    <div class="op-muted">{{ active_session.get_status_display }}</div>
+                </div>
+                {% if active_session.status == "active" %}
+                    <span class="badge badge-active">Faol</span>
+                {% elif active_session.status == "paused" %}
+                    <span class="badge badge-waiting">Tanaffusda</span>
+                {% else %}
+                    <span class="badge badge-inactive">Kutilmoqda</span>
+                {% endif %}
+            </div>
+            <div class="op-actions">
+                <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="pause_session">
+                    <button class="btn btn-warning btn-sm">Tanaffus</button>
+                </form>
+                <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resume_session">
+                    <button class="btn btn-success btn-sm">Davom ettirish</button>
+                </form>
+                <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="close_session">
+                    <button class="btn btn-danger btn-sm">Sessiyani yopish</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="op-muted">Aktiv sessiya yo'q.</div>
+        {% endif %}
+
+        <div class="op-divider"></div>
+
+        <h3 style="margin-bottom:0.5rem">Sessiyani boshlash</h3>
+        <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="start_session">
+            <label class="form-label">Xizmat</label>
+            <select name="service_id" class="form-control">
+                {% for service in services %}
+                <option value="{{ service.id }}">{{ service.title }} ({{ service.branch.title }})</option>
+                {% endfor %}
+            </select>
+            <div style="margin-top:0.75rem">
+                <button class="btn btn-primary btn-block">Boshlash</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="op-card">
+        <h3>Joriy navbat boshqaruvi</h3>
+        <div class="op-row">
+            <div>
+                <div class="op-muted">Joriy ticket</div>
+                {% if processing_ticket %}
+                    <div class="op-tick">#{{ processing_ticket.number }}</div>
+                    <div class="op-muted">{{ processing_ticket.session.service.title }}</div>
+                {% else %}
+                    <div class="op-muted">Joriy ticket yo'q</div>
+                {% endif %}
+            </div>
+            <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="next_ticket">
+                <button class="btn btn-primary btn-sm" {% if not active_session %}disabled{% endif %}>
+                    Keyingisini chaqirish
+                </button>
+            </form>
+        </div>
+
+        <div class="op-actions">
+            <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="done_ticket">
+                <button class="btn btn-success btn-sm" {% if not processing_ticket %}disabled{% endif %}>Yakunlash</button>
+            </form>
+            <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="skip_ticket">
+                <button class="btn btn-warning btn-sm" {% if not processing_ticket %}disabled{% endif %}>O'tkazish</button>
+            </form>
+            <form method="post" hx-post="{% url 'business:operator_panel' %}" hx-target="#op-panel" hx-swap="innerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="cancel_ticket">
+                <button class="btn btn-danger-soft btn-sm" {% if not processing_ticket %}disabled{% endif %}>Bekor qilish</button>
+            </form>
+        </div>
+
+        <div class="op-divider"></div>
+
+        <div class="op-row">
+            <h3 style="margin:0">Kutilayotgan ticketlar</h3>
+            <span class="op-pill">{{ waiting_tickets|length }} ta</span>
+        </div>
+        <div class="op-list">
+            {% for t in waiting_tickets %}
+            <div class="op-item">
+                <div>
+                    <div style="font-weight:700;color:var(--text)">#{{ t.number }}</div>
+                    <div class="op-muted">{{ t.created_at|date:"H:i" }}</div>
+                </div>
+                <span class="badge badge-waiting">{{ t.get_status_display }}</span>
+            </div>
+            {% empty %}
+            <div class="op-muted">Kutilayotgan ticketlar yo'q.</div>
+            {% endfor %}
+        </div>
+
+        <div class="op-divider"></div>
+
+        <h3>Yakunlanganlar</h3>
+        <div class="op-list">
+            {% for t in done_tickets %}
+            <div class="op-item">
+                <div>
+                    <div style="font-weight:700;color:var(--text)">#{{ t.number }}</div>
+                    <div class="op-muted">{{ t.finished_at|date:"H:i" }}</div>
+                </div>
+                <span class="badge badge-done">Bajarildi</span>
+            </div>
+            {% empty %}
+            <div class="op-muted">Hali yakunlangan ticketlar yo'q.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

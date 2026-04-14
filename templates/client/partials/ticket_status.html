@@ -1,0 +1,22 @@
+<div class="card">
+    <div class="card-title">Ticket holati</div>
+    <div style="font-weight:700;color:var(--text);font-size:1.1rem">{{ ticket.get_status_display }}</div>
+    <div class="text-muted" style="margin-top:0.4rem">{{ ticket.session.service.title }}</div>
+
+    <div class="grid grid-2" style="margin-top:1rem">
+        <div class="card" style="padding:1rem;background:var(--bg)">
+            <div class="text-muted">Navbat oldingizda</div>
+            <div style="font-weight:800;font-size:1.5rem;color:var(--text)">
+                {% if ticket.status == "waiting" %}{{ waiting_ahead }}{% else %}0{% endif %}
+            </div>
+        </div>
+        <div class="card" style="padding:1rem;background:var(--bg)">
+            <div class="text-muted">Holat yangilangan</div>
+            <div style="font-weight:700;color:var(--text)">{{ ticket.updated_at|date:"H:i:s" }}</div>
+        </div>
+    </div>
+
+    <div class="text-muted" style="margin-top:1rem">
+        Operator navbatni chaqirganda bu yerda avtomatik yangilanadi.
+    </div>
+</div>

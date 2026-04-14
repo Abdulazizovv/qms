@@ -47,6 +47,6 @@ def _redirect_by_role(user):
     if user.user_type == 'owner':
         return redirect('dashboard:index')
     elif user.user_type == 'operator':
-        return redirect('operator:panel')
+        return redirect('business:operator_panel')
     else:
         return redirect('client:home')
