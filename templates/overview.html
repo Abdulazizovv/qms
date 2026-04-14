@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Business Overview{% endblock %}
+
+{% block content %}
+<div class="page container">
+
+    <div class="page-header">
+        <div>
+            <h1>Business Overview</h1>
+            <p>Monitor your branches, revenue, and live performance.</p>
+        </div>
+        <button class="btn-primary">Export Report</button>
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="card">
+            <p>Active Branches</p>
+            <h2>{{ active_branches|default:0 }}</h2>
+        </div>
+
+        <div class="card">
+            <p>Monthly Visitors</p>
+            <h2>{{ monthly_visitors|default:0 }}</h2>
+        </div>
+
+        <div class="card">
+            <p>Monthly Revenue</p>
+            <h2>{{ monthly_revenue|default:0 }} so'm</h2>
+        </div>
+
+        <div class="card">
+            <p>Avg Satisfaction</p>
+            <h2>{% if avg_satisfaction %}{{ avg_satisfaction }}/5{% else %}N/A{% endif %}</h2>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+
+

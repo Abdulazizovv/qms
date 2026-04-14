@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ business.title }}{% endblock %}
+
+{% block content %}
+<div class="page container">
+
+    <div class="hero card">
+        <h1>{{ business.title }}</h1>
+        <p>{{ business.about }}</p>
+    </div>
+
+    <div class="content-grid">
+
+        <div>
+            <div class="card">
+                <h2>Branches</h2>
+                {% for branch in business.branches.all %}
+                    <div class="list-item">
+                        <strong>{{ branch.title }}</strong>
+                        <p>{{ branch.location }}</p>
+                    </div>
+                {% empty %}
+                    <p>No branches yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h2>Book Ticket</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <select name="service" class="input">
+                        {% for service in services %}
+                            <option value="{{ service.id }}">{{ service.title }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button class="btn-primary full">Get Ticket</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from django.utils.html import format_html
 from business.models import Business, Branch, WorkingDay, Service, Operator
 
@@ -129,7 +130,7 @@ class ServiceAdmin(admin.ModelAdmin):
         return format_html('<span style="color:{};font-weight:500">● {}</span>', color, label)
 
 
-# ─── Operator ──────────────────────────────────────────────────────────────
+
 
 @admin.register(Operator)
 class OperatorAdmin(admin.ModelAdmin):
@@ -169,3 +170,12 @@ class OperatorAdmin(admin.ModelAdmin):
         if obj.is_active:
             return format_html('<span style="color:#16a34a;font-weight:500">● Faol</span>')
         return format_html('<span style="color:#dc2626;font-weight:500">● Nofaol</span>')
+from business.models import Business, Service, Branch, Operator
+
+
+
+# admin.site.register(Business)
+# admin.site.register(Service)
+# admin.site.register(Branch)
+# admin.site.register(Operator)
+
