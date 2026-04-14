@@ -1,8 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Bizneslar{% endblock %}
+{% block title %}Bizneslarim{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <h1>Bizneslarim</h1>
+<div class="flex-between mb-2 fade-in">
+    <div class="page-header" style="margin-bottom:0">
+        <h1>Bizneslarim</h1>
+        <p>{{ businesses.count }} ta biznes</p>
+    </div>
+    <a href="{% url 'business:create' %}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Yangi biznes
+    </a>
 </div>
-<div class="card">Tez orada...</div>
+
+{% if businesses %}
+<div class="grid grid-2 fade-in-2">
+    {% for biz in businesses %}
+    <a href="{% url 'business:detail' biz.pk %}" class="card" style="text-decoration:none;display:block">
+        <div class="flex-between mb-1">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🏢</div>
+                <div>
+                    <div style="font-weight:700;color:var(--text)">{{ biz.title }}</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted)">{{ biz.branches.count }} filial</div>
+                </div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card text-center fade-in-2" style="padding:3rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🏢</div>
+    <h3 style="font-weight:700;margin-bottom:0.5rem">Hali biznes yo'q</h3>
+    <a href="{% url 'business:create' %}" class="btn btn-primary" style="display:inline-flex;margin-top:1rem">Biznes yaratish</a>
+</div>
+{% endif %}
 {% endblock %}

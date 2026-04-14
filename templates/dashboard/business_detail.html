@@ -1,53 +1,166 @@
 {% extends "base.html" %}
-{% block title %}Biznes {{ action }}{% endblock %}
+{% block title %}{{ business.title }}{% endblock %}
 
 {% block content %}
-<div class="page-header fade-in">
+<!-- Header -->
+<div class="flex-between fade-in" style="margin-bottom:1.5rem">
     <div style="display:flex;align-items:center;gap:12px">
-        <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}" style="color:var(--text-muted);display:flex;align-items:center">
+        <a href="{% url 'dashboard:index' %}" style="color:var(--text-muted);display:flex">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </a>
         <div>
-            <h1>Biznes {{ action }}</h1>
-            <p>Biznes ma'lumotlarini to'ldiring</p>
+            <h1 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.02em">{{ business.title }}</h1>
+            {% if business.about %}<p style="color:var(--text-muted);font-size:0.875rem">{{ business.about|truncatechars:80 }}</p>{% endif %}
         </div>
+    </div>
+    <div style="display:flex;gap:8px">
+        <a href="{% url 'business:edit' business.pk %}" class="btn btn-secondary btn-sm">Tahrirlash</a>
+        <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-primary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Operator qo'shish
+        </a>
     </div>
 </div>
 
-<div style="max-width:560px" class="fade-in-2">
-    <div class="card">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-            <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
-            {% endif %}
-
-            <div class="form-group">
-                <label class="form-label">Biznes nomi *</label>
-                {{ form.title }}
-                {% if form.title.errors %}<span class="form-error">{{ form.title.errors.0 }}</span>{% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Biznes haqida</label>
-                {{ form.about }}
-                {% if form.about.errors %}<span class="form-error">{{ form.about.errors.0 }}</span>{% endif %}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Logo (ixtiyoriy)</label>
-                {{ form.logo }}
-                {% if form.logo.errors %}<span class="form-error">{{ form.logo.errors.0 }}</span>{% endif %}
-            </div>
-
-            <hr class="divider">
-            <div style="display:flex;gap:12px">
-                <button type="submit" class="btn btn-primary" style="flex:1">{{ action }}</button>
-                <a href="{% if business %}{% url 'business:detail' business.pk %}{% else %}{% url 'business:list' %}{% endif %}"
-                   class="btn btn-secondary">Bekor qilish</a>
-            </div>
-        </form>
+<!-- Branches section -->
+<div class="fade-in-2">
+    <div class="flex-between mb-2">
+        <h2 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Filiallar</h2>
+        <a href="{% url 'business:branch_create' business.pk %}" class="btn btn-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Filial qo'shish
+        </a>
     </div>
+
+    {% if branches %}
+    {% for branch in branches %}
+    <div class="card fade-in-2" style="margin-bottom:1rem">
+        <!-- Branch header -->
+        <div class="flex-between" style="margin-bottom:1rem">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;background:var(--bg-hover);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🏪</div>
+                <div>
+                    <div style="font-weight:700;color:var(--text)">{{ branch.title }}</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted)">{{ branch.location }}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+                {% if branch.is_active %}<span class="badge badge-active">Faol</span>{% else %}<span class="badge badge-inactive">Faol emas</span>{% endif %}
+                <a href="{% url 'business:branch_edit' business.pk branch.pk %}" class="btn btn-secondary btn-sm">Tahrirlash</a>
+                <a href="{% url 'business:branch_delete' business.pk branch.pk %}" class="btn btn-sm" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">O'chirish</a>
+            </div>
+        </div>
+
+        <!-- Services table -->
+        <div style="margin-bottom:0.75rem">
+            <div class="flex-between" style="margin-bottom:8px">
+                <span style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Xizmatlar ({{ branch.services.count }})</span>
+                <a href="{% url 'business:service_create' business.pk branch.pk %}" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">+ Xizmat qo'shish</a>
+            </div>
+
+            {% if branch.services.all %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Xizmat</th>
+                            <th>Prefiks</th>
+                            <th>Vaqt</th>
+                            <th>Narx</th>
+                            <th>Holat</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in branch.services.all %}
+                        <tr>
+                            <td style="color:var(--text);font-weight:500">{{ service.title }}</td>
+                            <td><span style="font-family:var(--mono);background:var(--bg-hover);padding:2px 8px;border-radius:4px;font-size:0.8rem;color:var(--accent)">{{ service.ticket_prefix }}</span></td>
+                            <td style="color:var(--text-muted)">{{ service.estimated_time_minutes }} daq</td>
+                            <td style="color:var(--text-muted)">{% if service.price %}{{ service.price|floatformat:0 }} so'm{% else %}Bepul{% endif %}</td>
+                            <td>
+                                {% if service.status == 'active' %}<span class="badge badge-active">Faol</span>
+                                {% elif service.status == 'break' %}<span class="badge badge-waiting">Tanaffus</span>
+                                {% else %}<span class="badge badge-inactive">Faol emas</span>{% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;justify-content:flex-end">
+                                    <a href="{% url 'business:service_edit' business.pk service.pk %}" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">Tahrirlash</a>
+                                    <a href="{% url 'business:service_delete' business.pk service.pk %}" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">O'chirish</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:0.875rem;background:var(--bg-hover);border-radius:var(--radius-sm)">
+                Hali xizmat qo'shilmagan
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card text-center" style="padding:2rem">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">🏪</div>
+        <p class="text-muted" style="margin-bottom:1rem">Hali filial qo'shilmagan</p>
+        <a href="{% url 'business:branch_create' business.pk %}" class="btn btn-primary" style="display:inline-flex">Filial qo'shish</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Operators section -->
+<div class="fade-in-3" style="margin-top:2rem">
+    <div class="flex-between mb-2">
+        <h2 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)">Operatorlar</h2>
+        <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Operator qo'shish
+        </a>
+    </div>
+
+    {% if operators %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Operator</th>
+                    <th>Telefon</th>
+                    <th>Filial</th>
+                    <th>Stol №</th>
+                    <th>Xizmatlar</th>
+                    <th>Holat</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for op in operators %}
+                <tr>
+                    <td style="color:var(--text);font-weight:500">{{ op.user.first_name|default:"—" }}</td>
+                    <td style="font-family:var(--mono);font-size:0.8rem">{{ op.user.phone }}</td>
+                    <td>{{ op.branch.title }}</td>
+                    <td><span style="font-family:var(--mono);background:var(--bg-hover);padding:2px 8px;border-radius:4px;font-size:0.8rem">{{ op.desk_number }}</span></td>
+                    <td style="color:var(--text-muted);font-size:0.8rem">{{ op.services.count }} ta xizmat</td>
+                    <td>{% if op.is_active %}<span class="badge badge-active">Faol</span>{% else %}<span class="badge badge-inactive">Faol emas</span>{% endif %}</td>
+                    <td>
+                        <div style="display:flex;gap:6px;justify-content:flex-end">
+                            <a href="{% url 'business:operator_edit' business.pk op.pk %}" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">Tahrirlash</a>
+                            <a href="{% url 'business:operator_delete' business.pk op.pk %}" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">O'chirish</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:2rem">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">👤</div>
+        <p class="text-muted" style="margin-bottom:1rem">Hali operator qo'shilmagan</p>
+        <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-primary" style="display:inline-flex">Operator qo'shish</a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
