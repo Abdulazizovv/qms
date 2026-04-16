@@ -5,9 +5,12 @@ app_name = 'business'
 
 urlpatterns = [
     # Business CRUD
-    path('',                             views.business_list,   name='list'),
+    
+    path('', views.home, name='home'),
+    path('list/', views.business_list, name='list'),
     path('create/',                      views.business_create, name='create'),
     path('<int:pk>/',                    views.business_detail, name='detail'),
+    path('<int:pk>/analytics/',          views.business_analytics, name='analytics'),
     path('<int:pk>/edit/',               views.business_edit,   name='edit'),
     path('<int:pk>/delete/',             views.business_delete, name='delete'),
 
@@ -29,4 +32,5 @@ urlpatterns = [
 
     # Operator Panel
     path('operator/panel/', views.operator_panel, name='operator_panel'),
+    path('operator/settings/', views.operator_settings, name='operator_settings'),
 ]

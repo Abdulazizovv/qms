@@ -1,5 +1,6 @@
+{% load translation_tags %}
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +26,7 @@
             --font:      'Sora', sans-serif;
             --mono:      'JetBrains Mono', monospace;
             --radius:    14px;
-            --radius-sm: 9px;
+            --radius-sm: 9px;        
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -301,19 +302,19 @@
     <div class="feature-list">
         <div class="feature-item">
             <div class="feature-icon">⚡</div>
-            <span>Real-time navbat kuzatuvi</span>
+            <span>Real-time navbat kuzatuvi (ishlaydi)</span>
         </div>
         <div class="feature-item">
             <div class="feature-icon">📊</div>
-            <span>Xizmat statistikasi va tahlil</span>
+            <span>Xizmat statistikasi va tahlil (ishlaydi)</span>
         </div>
         <div class="feature-item">
             <div class="feature-icon">🤖</div>
-            <span>Telegram bot orqali integratsiya</span>
+            <span>Telegram bot orqali integratsiya (ishlaydi)</span>
         </div>
         <div class="feature-item">
             <div class="feature-icon">🏢</div>
-            <span>Ko'p filiallar boshqaruvi</span>
+            <span>Ko'p filiallar boshqaruvi (ishlaydi)</span>
         </div>
     </div>
 </div>

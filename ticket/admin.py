@@ -21,7 +21,7 @@ class SessionAdmin(admin.ModelAdmin):
     list_display  = ("id", "operator", "service", "date", "status_badge", "tickets_count", "current_ticket")
     list_filter   = ("status", "date", "service__branch__business")
     search_fields = ("operator__user__phone", "service__title")
-    readonly_fields = ("created_at", "updated_at", "started_at", "closed_at")
+    readonly_fields = ("date", "created_at", "updated_at", "started_at", "closed_at")
     date_hierarchy  = "date"
     inlines = [TicketInline]
 

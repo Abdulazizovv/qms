@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Avg, F
 from business.models import Business, Branch, Service
 from ticket.models import Session, SessionStatus, Ticket
 from user.models import UserTypes
@@ -91,7 +92,18 @@ def ticket_status_partial(request, ticket_pk):
             created_at__lt=ticket.created_at,
         ).count()
 
+    # Calculate estimated wait time
+    avg_service_time = Ticket.objects.filter(
+        session__service=ticket.session.service,
+        status="done"
+    ).aggregate(
+        avg_time=Avg(F('finished_at') - F('called_at'))
+    )['avg_time']
+    
+    estimated_wait_minutes = waiting_ahead * (avg_service_time.total_seconds() / 60 if avg_service_time else 10)
+
     return render(request, "client/partials/ticket_status.html", {
         "ticket": ticket,
         "waiting_ahead": waiting_ahead,
+        "estimated_wait_minutes": int(estimated_wait_minutes),
     })

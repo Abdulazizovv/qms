@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+
+{% block title %}Profil Sozlamalari{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg:        #0a0e1a;
+        --bg-card:   #111827;
+        --border:    #1e2d45;
+        --border-lite: #243450;
+        --accent:    #3b82f6;
+        --accent-2:  #06b6d4;
+        --accent-glow: rgba(59,130,246,0.2);
+        --success:   #10b981;
+        --danger:    #ef4444;
+        --text:      #e2e8f0;
+        --text-muted:#64748b;
+        --text-dim:  #94a3b8;
+        --font:      'Sora', sans-serif;
+        --mono:      'JetBrains Mono', monospace;
+        --radius:    14px;
+        --radius-sm: 9px;
+    }
+
+    .settings-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 2rem;
+    }
+
+    .settings-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .settings-back:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .settings-info h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 6px;
+    }
+
+    .settings-info p {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .settings-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .settings-section-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 8px;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 14px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 0.9rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+        background: var(--bg);
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 4px;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+        font-family: var(--mono);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid var(--border);
+    }
+
+    .badge-active {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #6ee7b7;
+    }
+
+    .badge-operator {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        color: #93c5fd;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: var(--font);
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        letter-spacing: 0.01em;
+    }
+
+    .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 0 24px rgba(59,130,246,0.35);
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+        box-shadow: 0 0 36px rgba(59,130,246,0.55);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #6ee7b7;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+    }
+
+    .services-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .service-tag {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #93c5fd;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 1.5rem;
+        }
+
+        .settings-card {
+            padding: 1.5rem;
+        }
+
+        .form-2col {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container fade-in">
+    <!-- Header -->
+    <div class="settings-header">
+        <a href="{% url 'business:operator_panel' %}" class="settings-back" title="Ortga">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div class="settings-info">
+            <h1>👤 Profil Sozlamalari</h1>
+            <p>Shaxsiy ma'lumotlarni va ish sozlamalarini tahrirlash</p>
+        </div>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tezkor Ma'lumotlar -->
+    <div class="settings-card fade-in-2">
+        <div class="settings-section-title">
+            <div class="settings-section-icon">⚡</div>
+            Tezkor Ma'lumotlar
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Filial</div>
+                <div class="info-value">{{ operator.branch.title }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Biznes</div>
+                <div class="info-value">{{ operator.branch.business.title }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div style="margin-top:4px">
+                    {% if operator.is_active %}
+                    <span class="badge badge-active">✓ Faol</span>
+                    {% else %}
+                    <span class="badge" style="background:rgba(107,115,128,0.1);border-color:rgba(107,115,128,0.3);color:#9ca3af">• Nofaol</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Rol</div>
+                <div style="margin-top:4px">
+                    <span class="badge badge-operator">🎯 Operator</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shaxsiy Ma'lumotlar -->
+    <div class="settings-card fade-in-3">
+        <div class="settings-section-title">
+            <div class="settings-section-icon">👤</div>
+            Profil Ma'lumotlari
+        </div>
+        <form method="POST" action="{% url 'business:operator_settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="profile">
+
+            <div class="form-2col">
+                <div class="form-group">
+                    <label class="form-label">To'liq Ism</label>
+                    <input type="text" name="first_name" class="form-control" 
+                           value="{{ operator.user.first_name }}" placeholder="Ismingiz" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefon Raqam</label>
+                    <input type="text" class="form-control" 
+                           value="{{ operator.user.phone }}" disabled style="opacity:0.6">
+                    <small style="color:var(--text-muted);margin-top:4px;display:block">Telefon raqamni o'zgartirib bo'lmaydi</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Stol Raqami</label>
+                <input type="text" name="desk_number" class="form-control" 
+                       value="{{ operator.desk_number }}" placeholder="Masalan: 1, A1, yoki WINDOW-1">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Saqlash
+                </button>
+                <a href="{% url 'business:operator_panel' %}" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Parol O'zgartirish -->
+    <div class="settings-card fade-in-4">
+        <div class="settings-section-title">
+            <div class="settings-section-icon">🔒</div>
+            Parol O'zgartirish
+        </div>
+        <form method="POST" action="{% url 'business:operator_settings' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="password">
+
+            <div class="form-group">
+                <label class="form-label">Hozirgi Parol</label>
+                <input type="password" name="current_password" class="form-control" 
+                       placeholder="Hozirgi parolingiz" required>
+            </div>
+
+            <div class="form-2col">
+                <div class="form-group">
+                    <label class="form-label">Yangi Parol</label>
+                    <input type="password" name="new_password" class="form-control" 
+                           placeholder="Yangi parol" required>
+                    <small style="color:var(--text-muted);margin-top:4px;display:block">Kamida 6 belgidan iborat bo'lishi kerak</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Parolni Tasdiqlang</label>
+                    <input type="password" name="confirm_password" class="form-control" 
+                           placeholder="Parolni qayta kiriting" required>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Parolni O'zgartirish
+                </button>
+                <a href="{% url 'business:operator_panel' %}" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Xizmatlar -->
+    <div class="settings-card fade-in-5">
+        <div class="settings-section-title">
+            <div class="settings-section-icon">🛍️</div>
+            Taqdim Etilayotgan Xizmatlar
+        </div>
+        <div class="services-tags">
+            {% if operator.services.all %}
+                {% for service in operator.services.all %}
+                <div class="service-tag">✓ {{ service.title }}</div>
+                {% endfor %}
+            {% else %}
+                <p style="color:var(--text-muted);font-size:0.875rem">Hech qanday xizmat taqdim qilmayapti</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Qo'shimcha Ma'lumotlar -->
+    <div class="settings-card fade-in-6">
+        <div class="settings-section-title">
+            <div class="settings-section-icon">ℹ️</div>
+            Qo'shimcha Ma'lumotlar
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Ro'yxatga Olingan Sana</div>
+                <div class="info-value" style="font-size:0.9rem">{{ operator.user.date_joined|date:"d.m.Y H:i" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Oxirgi O'zgartirilgan</div>
+                <div class="info-value" style="font-size:0.9rem">{{ operator.user.updated_at|date:"d.m.Y H:i"|default:"—" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Smooth fade-in animations
+    document.querySelectorAll('.fade-in, .fade-in-2, .fade-in-3, .fade-in-4, .fade-in-5').forEach((el, i) => {
+        el.style.animation = `fadeInUp 0.5s ease forwards`;
+        el.style.animationDelay = `${i * 0.1}s`;
+        el.style.opacity = '0';
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

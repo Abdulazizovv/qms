@@ -1,0 +1,46 @@
+{% extends "auth/base_auth.html" %}
+{% load translation_tags %}
+
+{% block title %}{{ 'verify_code_title'|t }}{% endblock %}
+
+{% block content %}
+<div class="auth-box-header">
+    <h1>{{ 'verify_code_title'|t }}</h1>
+    <p>{{ 'verify_code_subtitle'|t }}</p>
+</div>
+
+<form method="POST" action="{% url 'auth:verify_reset_code' %}">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <div class="form-group">
+        <label class="form-label">{{ 'confirm_btn'|t }}</label>
+        <div class="input-wrap">
+            <span class="input-icon">🔢</span>
+            <input
+                type="text"
+                name="code"
+                class="form-control {% if form.code.errors %}is-error{% endif %}"
+                placeholder="123456"
+                value="{{ form.code.value|default:'' }}"
+                maxlength="6"
+                autofocus
+            >
+        </div>
+        {% if form.code.errors %}
+        <span class="form-error">{{ form.code.errors.0 }}</span>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn">
+        {{ 'confirm_btn'|t }}
+    </button>
+</form>
+
+<div class="auth-link">
+    <a href="{% url 'auth:forgot_password' %}">{{ 'change_phone'|t }}</a>
+</div>
+{% endblock %}

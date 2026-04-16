@@ -7,7 +7,5 @@ class Command(BaseCommand):
     help = 'Telegram-bot'
 
     def handle(self, *args, **options):
-        pass
-
-print ('bot ishladi')
-bot.infinity_polling()
+        print('Bot ishga tushmoqda...')
+        bot.infinity_polling()

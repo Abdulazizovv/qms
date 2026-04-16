@@ -3,9 +3,12 @@
         <h1>Operator Panel</h1>
         <div class="op-sub">{{ operator.user.first_name|default:operator.user.phone }}</div>
     </div>
-    <div class="op-pill">
-        Filial: {{ operator.branch.title }} • Stol: {{ operator.desk_number }}
-    </div>
+    <a href="{% url 'business:operator_settings' %}" class="op-pill" style="cursor:pointer;text-decoration:none;color:inherit;transition:all 0.2s">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+            🏢 Filial: {{ operator.branch.title }} • Stol: {{ operator.desk_number }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M9 5l7 7-7 7"/></svg>
+        </span>
+    </a>
 </div>
 
 <div class="op-grid fade-in-2">

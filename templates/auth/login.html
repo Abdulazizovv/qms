@@ -1,11 +1,12 @@
 {% extends "auth/base_auth.html" %}
+{% load translation_tags %}
 
-{% block title %}Kirish{% endblock %}
+{% block title %}{{ 'login'|t }}{% endblock %}
 
 {% block content %}
 <div class="auth-box-header">
-    <h1>Xush kelibsiz 👋</h1>
-    <p>Davom etish uchun hisobingizga kiring</p>
+    <h1>{{ 'login_welcome'|t }}</h1>
+    <p>{{ 'login_subtitle'|t }}</p>
 </div>
 
 <form method="POST" action="{% url 'auth:login' %}">
@@ -16,7 +17,7 @@
     {% endif %}
 
     <div class="form-group">
-        <label class="form-label">Telefon raqam</label>
+        <label class="form-label">{{ 'phone_number'|t }}</label>
         <div class="input-wrap">
             <span class="input-icon">📱</span>
             <input
@@ -35,8 +36,8 @@
 
     <div class="form-group">
         <label class="form-label" style="display:flex;justify-content:space-between;">
-            <span>Parol</span>
-            <a href="#" style="color:var(--accent);font-size:0.78rem;font-weight:600;text-decoration:none;">Unutdingizmi?</a>
+            <span>{{ 'password'|t }}</span>
+            <a href="{% url 'auth:forgot_password' %}" style="color:var(--accent);font-size:0.78rem;font-weight:600;text-decoration:none;">{{ 'forgot_password'|t }}</a>
         </label>
         <div class="input-wrap">
             <span class="input-icon">🔒</span>
@@ -53,11 +54,11 @@
     </div>
 
     <button type="submit" class="btn">
-        Kirish →
+        {{ 'login'|t }} →
     </button>
 </form>
 
 <div class="auth-link">
-    Hisobingiz yo'qmi? <a href="{% url 'auth:register' %}">Ro'yxatdan o'ting</a>
+    {{ 'have_account'|t }} <a href="{% url 'auth:register' %}">{{ 'register'|t }}</a>
 </div>
 {% endblock %}

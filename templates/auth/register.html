@@ -1,11 +1,12 @@
 {% extends "auth/base_auth.html" %}
+{% load translation_tags %}
 
-{% block title %}Ro'yxatdan o'tish{% endblock %}
+{% block title %}{{ 'register'|t }}{% endblock %}
 
 {% block content %}
 <div class="auth-box-header">
-    <h1>Hisob yarating 🚀</h1>
-    <p>Bir necha daqiqada boshlang</p>
+    <h1>{{ 'create_account'|t }}</h1>
+    <p>{{ 'create_account_subtitle'|t }}</p>
 </div>
 
 <form method="POST" action="{% url 'auth:register' %}">
@@ -16,14 +17,14 @@
     {% endif %}
 
     <div class="form-group">
-        <label class="form-label">Ism</label>
+        <label class="form-label">{{ 'first_name'|t }}</label>
         <div class="input-wrap">
             <span class="input-icon">👤</span>
             <input
                 type="text"
                 name="first_name"
                 class="form-control {% if form.first_name.errors %}is-error{% endif %}"
-                placeholder="Ismingiz"
+                placeholder="{{ 'first_name'|t }}"
                 value="{{ form.first_name.value|default:'' }}"
                 autofocus
             >
@@ -34,7 +35,7 @@
     </div>
 
     <div class="form-group">
-        <label class="form-label">Telefon raqam</label>
+        <label class="form-label">{{ 'phone_number'|t }}</label>
         <div class="input-wrap">
             <span class="input-icon">📱</span>
             <input
@@ -51,14 +52,14 @@
     </div>
 
     <div class="form-group">
-        <label class="form-label">Rol tanlang</label>
+        <label class="form-label">{{ 'role_select'|t }}</label>
         <div class="role-grid">
             <div class="role-card">
                 <input type="radio" name="user_type" id="role_owner" value="owner"
                     {% if form.user_type.value == 'owner' or not form.user_type.value %}checked{% endif %}>
                 <label class="role-label" for="role_owner">
                     <span class="role-emoji">🏢</span>
-                    <span class="role-text">Biznes egasi</span>
+                    <span class="role-text">{{ 'business_owner'|t }}</span>
                 </label>
             </div>
             <div class="role-card">
@@ -66,7 +67,7 @@
                     {% if form.user_type.value == 'client' %}checked{% endif %}>
                 <label class="role-label" for="role_client">
                     <span class="role-emoji">👥</span>
-                    <span class="role-text">Mijoz</span>
+                    <span class="role-text">{{ 'client'|t }}</span>
                 </label>
             </div>
         </div>
@@ -76,14 +77,14 @@
     </div>
 
     <div class="form-group">
-        <label class="form-label">Parol</label>
+        <label class="form-label">{{ 'password'|t }}</label>
         <div class="input-wrap">
             <span class="input-icon">🔒</span>
             <input
                 type="password"
                 name="password1"
                 class="form-control {% if form.password1.errors %}is-error{% endif %}"
-                placeholder="Kuchli parol yarating"
+                placeholder="{{ 'weak_password_hint'|t }}"
             >
         </div>
         {% if form.password1.errors %}
@@ -92,27 +93,26 @@
     </div>
 
     <div class="form-group">
-        <label class="form-label">Parolni takrorlang</label>
+        <label class="form-label">{{ 'repeat_password'|t }}</label>
         <div class="input-wrap">
             <span class="input-icon">🔒</span>
             <input
                 type="password"
                 name="password2"
                 class="form-control {% if form.password2.errors %}is-error{% endif %}"
-                placeholder="Parolni qayta kiriting"
+                placeholder="{{ 'repeat_password'|t }}"
             >
-        </div>
         {% if form.password2.errors %}
         <span class="form-error">{{ form.password2.errors.0 }}</span>
         {% endif %}
     </div>
 
     <button type="submit" class="btn">
-        Hisob yaratish →
+        {{ 'register'|t }} →
     </button>
 </form>
 
 <div class="auth-link">
-    Hisobingiz bormi? <a href="{% url 'auth:login' %}">Kiring</a>
+    {{ 'already_have_account'|t }} <a href="{% url 'auth:login' %}">{{ 'sign_in'|t }}</a>
 </div>
 {% endblock %}

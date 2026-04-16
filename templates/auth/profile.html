@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load translation_tags %}
+
+{% block title %}{{ 'profile'|t }}{% endblock %}
+
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <span class="badge badge-active">{{ user.get_user_type_display }}</span>
+        <h1>{{ 'profile_title'|t }}</h1>
+        <p class="text-muted">{{ 'profile_subtitle'|t }}</p>
+    </div>
+    <a href="{% url 'auth:logout' %}" class="btn btn-secondary">
+        <i data-lucide="log-out"></i> {{ 'logout'|t }}
+    </a>
+</div>
+
+<div class="grid grid-2 mb-2">
+    <div class="card">
+        <div class="page-header mb-2">
+            <h2>{{ 'profile'|t }}</h2>
+        </div>
+        <div class="form-group">
+            <label class="form-label">{{ 'profile_phone'|t }}</label>
+            <p>{{ user.phone }}</p>
+        </div>
+        <div class="form-group">
+            <label class="form-label">{{ 'profile_role'|t }}</label>
+            <p>{{ user.get_user_type_display }}</p>
+        </div>
+        <div class="form-group">
+            <label class="form-label">{{ 'profile_language'|t }}</label>
+            <p>{{ user.preferred_language|language_name }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="page-header mb-2">
+            <h2>{{ 'quick_action_payment'|t }}</h2>
+            <p class="text-muted">{{ 'profile_subtitle'|t }}</p>
+        </div>
+        <div class="grid grid-2">
+            <a href="#payment" class="card btn-secondary text-center" style="text-decoration:none; padding:1.5rem;">
+                <i data-lucide="credit-card"></i>
+                <strong>{{ 'quick_action_payment'|t }}</strong>
+            </a>
+            <a href="#notifications" class="card btn-secondary text-center" style="text-decoration:none; padding:1.5rem;">
+                <i data-lucide="bell"></i>
+                <strong>{{ 'quick_action_notifications'|t }}</strong>
+            </a>
+            <a href="#language" class="card btn-secondary text-center" style="text-decoration:none; padding:1.5rem;">
+                <i data-lucide="globe"></i>
+                <strong>{{ 'quick_action_language'|t }}</strong>
+            </a>
+            <a href="#security" class="card btn-secondary text-center" style="text-decoration:none; padding:1.5rem;">
+                <i data-lucide="shield-check"></i>
+                <strong>{{ 'quick_action_security'|t }}</strong>
+            </a>
+            <a href="#support" class="card btn-secondary text-center" style="text-decoration:none; padding:1.5rem; grid-column: 1 / -1;">
+                <i data-lucide="help-circle"></i>
+                <strong>{{ 'quick_action_support'|t }}</strong>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div id="payment" class="card mb-2">
+    <div class="page-header mb-2">
+        <h2>{{ 'payment_section_title'|t }}</h2>
+        <p class="text-muted">{{ 'payment_section_desc'|t }}</p>
+    </div>
+    <form method="POST" action="{% url 'auth:profile' %}">
+        {% csrf_token %}
+        <input type="hidden" name="profile_section" value="payment">
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label class="form-label">{{ 'first_name'|t }}</label>
+                {{ profile_form.first_name }}
+                {% if profile_form.first_name.errors %}
+                <span class="form-error">{{ profile_form.first_name.errors.0 }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">{{ 'payment_method'|t }}</label>
+                {{ profile_form.payment_method }}
+                {% if profile_form.payment_method.errors %}
+                <span class="form-error">{{ profile_form.payment_method.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">{{ 'card_number'|t }}</label>
+            {{ profile_form.card_number }}
+            {% if profile_form.card_number.errors %}
+            <span class="form-error">{{ profile_form.card_number.errors.0 }}</span>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ 'save_changes'|t }}</button>
+    </form>
+</div>
+
+<div id="notifications" class="card mb-2">
+    <div class="page-header mb-2">
+        <h2>{{ 'notifications_section_title'|t }}</h2>
+        <p class="text-muted">{{ 'notifications_section_desc'|t }}</p>
+    </div>
+    <form method="POST" action="{% url 'auth:profile' %}">
+        {% csrf_token %}
+        <input type="hidden" name="profile_section" value="notifications">
+        <div class="form-group">
+            <label class="form-label">{{ 'notifications_enabled'|t }}</label>
+            {{ notifications_form.notifications_enabled }}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ 'save_changes'|t }}</button>
+    </form>
+</div>
+
+<div id="language" class="card mb-2">
+    <div class="page-header mb-2">
+        <h2>{{ 'language_section_title'|t }}</h2>
+        <p class="text-muted">{{ 'language_section_desc'|t }}</p>
+    </div>
+    <form method="POST" action="{% url 'auth:profile' %}">
+        {% csrf_token %}
+        <input type="hidden" name="profile_section" value="language">
+        <div class="form-group">
+            <label class="form-label">{{ 'profile_language'|t }}</label>
+            {{ language_form.preferred_language }}
+            {% if language_form.preferred_language.errors %}
+            <span class="form-error">{{ language_form.preferred_language.errors.0 }}</span>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ 'save_changes'|t }}</button>
+    </form>
+</div>
+
+<div id="security" class="card mb-2">
+    <div class="page-header mb-2">
+        <h2>{{ 'security_section_title'|t }}</h2>
+        <p class="text-muted">{{ 'security_section_desc'|t }}</p>
+    </div>
+    <div class="card mb-2">
+        <h3>{{ 'change_password_title'|t }}</h3>
+        <p class="text-muted">{{ 'change_password_desc'|t }}</p>
+        <form method="POST" action="{% url 'auth:profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="change_password" value="1">
+            <div class="form-group">
+                <label class="form-label">{{ 'current_password'|t }}</label>
+                {{ password_form.current_password }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">{{ 'new_password'|t }}</label>
+                {{ password_form.password1 }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">{{ 'confirm_password'|t }}</label>
+                {{ password_form.password2 }}
+            </div>
+            {% if password_form.non_field_errors %}
+            <div class="alert alert-error">{{ password_form.non_field_errors.0 }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">{{ 'save_changes'|t }}</button>
+        </form>
+    </div>
+    <div class="card">
+        <h3>{{ 'delete_account_title'|t }}</h3>
+        <p class="text-muted">{{ 'delete_account_desc'|t }}</p>
+        <form method="POST" action="{% url 'auth:profile' %}">
+            {% csrf_token %}
+            <input type="hidden" name="delete_account" value="1">
+            <div class="form-group">
+                <label class="form-label">{{ 'current_password'|t }}</label>
+                {{ delete_form.password }}
+            </div>
+            {% if delete_form.non_field_errors %}
+            <div class="alert alert-error">{{ delete_form.non_field_errors.0 }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-danger">{{ 'delete_account_button'|t }}</button>
+        </form>
+    </div>
+</div>
+
+<div id="support" class="card">
+    <div class="page-header mb-2">
+        <h2>{{ 'support_section_title'|t }}</h2>
+        <p class="text-muted">{{ 'support_section_desc'|t }}</p>
+    </div>
+    <div class="grid grid-2">
+        <div class="card btn-secondary">
+            <h3>{{ 'help_center'|t }}</h3>
+            <p>{{ 'support_email_text'|t }}</p>
+        </div>
+        <div class="card btn-secondary">
+            <h3>{{ 'direct_support'|t }}</h3>
+            <p>{{ 'pro_tip'|t }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

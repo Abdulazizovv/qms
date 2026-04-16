@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ business.title }} - Statistika{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ business.title }}</h1>
+            <p class="text-gray-600 mt-2">Xizmat statistikasi va tahlil</p>
+        </div>
+        <a href="{% url 'business:detail' business.pk %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+            ← Ortga
+        </a>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <form method="GET" class="flex gap-4 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Boshlanish sanasi</label>
+                <input type="date" name="from_date" value="{{ from_date|date:'Y-m-d' }}" 
+                       class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tugash sanasi</label>
+                <input type="date" name="to_date" value="{{ to_date|date:'Y-m-d' }}" 
+                       class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+                Filtrlash
+            </button>
+        </form>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Jami ticketlar</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_tickets }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Bajarilgan</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ completed_tickets }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-yellow-100 rounded-lg">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">O'rtacha kutish</p>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {% if avg_wait_time %}
+                            {{ avg_wait_time|floatformat:0 }} daq
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-purple-100 rounded-lg">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Bajarish darajasi</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ completion_rate|floatformat:1 }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Statistics Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Kunlik statistika</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sana</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jami</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bajarilgan</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bajarish %</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stat in daily_stats %}
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.date|date:'d.m.Y' }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.total }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.completed }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.completion_rate|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Service Performance -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Xizmatlar bo'yicha statistika</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Filial</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Xizmat</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jami</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bajarilgan</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bajarish %</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stat in service_stats %}
+                    <tr>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.branch.title }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.service.title }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.total }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.completed }}</td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ stat.completion_rate|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

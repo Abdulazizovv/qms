@@ -3,12 +3,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.db import transaction
+from django.db.models import Avg, F
 from business.models import Business, Branch, Service, Operator
 from business.forms import BusinessForm, BranchForm, ServiceForm, OperatorCreateForm, OperatorEditForm
 from ticket.models import Ticket, Session, SessionStatus, StatusTypes
-from user.models import UserTypes
+from user.models import UserTypes, MyUser
 from django.utils import timezone
 
+
+
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'home.html')
 
 def owner_required(view_func):
     """Faqat owner tipidagi userlar uchun decorator"""
@@ -91,6 +98,117 @@ def business_edit(request, pk):
         messages.success(request, "Biznes ma'lumotlari yangilandi!")
         return redirect('business:detail', pk=pk)
     return render(request, 'dashboard/business_form.html', {'form': form, 'action': 'Tahrirlash', 'business': business})
+
+
+@owner_required
+def business_analytics(request, pk):
+    business = get_object_or_404(Business, pk=pk, owner=request.user)
+    branches = Branch.objects.filter(business=business)
+    
+    # Get date range from request or default to last 30 days
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    
+    if not from_date or not to_date:
+        to_date = timezone.now().date()
+        from_date = to_date - timezone.timedelta(days=30)
+    else:
+        from_date = timezone.datetime.strptime(from_date, '%Y-%m-%d').date()
+        to_date = timezone.datetime.strptime(to_date, '%Y-%m-%d').date()
+    
+    # Statistics calculations
+    total_tickets = Ticket.objects.filter(
+        session__service__branch__in=branches,
+        created_at__date__range=[from_date, to_date]
+    ).count()
+    
+    completed_tickets = Ticket.objects.filter(
+        session__service__branch__in=branches,
+        status=StatusTypes.DONE,
+        created_at__date__range=[from_date, to_date]
+    ).count()
+    
+    avg_wait_time = Ticket.objects.filter(
+        session__service__branch__in=branches,
+        status=StatusTypes.DONE,
+        created_at__date__range=[from_date, to_date]
+    ).exclude(
+        called_at__isnull=True
+    ).aggregate(
+        avg_wait=Avg(F('called_at') - F('created_at'))
+    )['avg_wait']
+    
+    avg_service_time = Ticket.objects.filter(
+        session__service__branch__in=branches,
+        status=StatusTypes.DONE,
+        created_at__date__range=[from_date, to_date]
+    ).exclude(
+        finished_at__isnull=True
+    ).aggregate(
+        avg_service=Avg(F('finished_at') - F('called_at'))
+    )['avg_service']
+    
+    # Daily statistics
+    daily_stats = []
+    current_date = from_date
+    while current_date <= to_date:
+        day_tickets = Ticket.objects.filter(
+            session__service__branch__in=branches,
+            created_at__date=current_date
+        ).count()
+        
+        day_completed = Ticket.objects.filter(
+            session__service__branch__in=branches,
+            status=StatusTypes.DONE,
+            created_at__date=current_date
+        ).count()
+        
+        daily_stats.append({
+            'date': current_date,
+            'total': day_tickets,
+            'completed': day_completed,
+            'completion_rate': (day_completed / day_tickets * 100) if day_tickets > 0 else 0
+        })
+        current_date += timezone.timedelta(days=1)
+    
+    # Service performance
+    service_stats = []
+    for branch in branches:
+        services = Service.objects.filter(branch=branch)
+        for service in services:
+            svc_tickets = Ticket.objects.filter(
+                session__service=service,
+                created_at__date__range=[from_date, to_date]
+            ).count()
+            
+            svc_completed = Ticket.objects.filter(
+                session__service=service,
+                status=StatusTypes.DONE,
+                created_at__date__range=[from_date, to_date]
+            ).count()
+            
+            service_stats.append({
+                'service': service,
+                'branch': branch,
+                'total': svc_tickets,
+                'completed': svc_completed,
+                'completion_rate': (svc_completed / svc_tickets * 100) if svc_tickets > 0 else 0
+            })
+    
+    context = {
+        'business': business,
+        'from_date': from_date,
+        'to_date': to_date,
+        'total_tickets': total_tickets,
+        'completed_tickets': completed_tickets,
+        'completion_rate': (completed_tickets / total_tickets * 100) if total_tickets > 0 else 0,
+        'avg_wait_time': avg_wait_time,
+        'avg_service_time': avg_service_time,
+        'daily_stats': daily_stats,
+        'service_stats': service_stats,
+    }
+    
+    return render(request, 'dashboard/analytics.html', context)
 
 
 @owner_required
@@ -224,6 +342,58 @@ def operator_delete(request, biz_pk, pk):
         messages.success(request, "Operator o'chirildi")
         return redirect('business:detail', pk=biz_pk)
     return render(request, 'dashboard/confirm_delete.html', {'obj': operator, 'type': 'operator', 'business': business})
+
+
+@operator_required
+def operator_settings(request):
+    operator = get_object_or_404(Operator, user=request.user)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action', 'profile')
+        
+        if action == 'profile':
+            # Profil ma'lumotlarini o'zgartirish
+            first_name = request.POST.get('first_name', '').strip()
+            desk_number = request.POST.get('desk_number', '').strip()
+            
+            if not first_name:
+                messages.error(request, "Ism bo'sh bo'lishi mumkin emas")
+            else:
+                operator.user.first_name = first_name
+                if desk_number:
+                    operator.desk_number = desk_number
+                
+                operator.user.save()
+                operator.save()
+                messages.success(request, "✓ Profil ma'lumotlari muvaffaqiyatli yangilandi!")
+                return redirect('business:operator_settings')
+        
+        elif action == 'password':
+            # Parolni o'zgartirish
+            current_password = request.POST.get('current_password', '')
+            new_password = request.POST.get('new_password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+            
+            if not current_password:
+                messages.error(request, "Hozirgi parolni kiriting")
+            elif not operator.user.check_password(current_password):
+                messages.error(request, "Hozirgi parol noto'g'ri")
+            elif not new_password:
+                messages.error(request, "Yangi parol bo'sh bo'lishi mumkin emas")
+            elif len(new_password) < 6:
+                messages.error(request, "Parol kamida 6 ta belgidan iborat bo'lishi kerak")
+            elif new_password != confirm_password:
+                messages.error(request, "Parollar mos kelmadi")
+            elif new_password == current_password:
+                messages.error(request, "Yangi parol eski parol bilan bir xil bo'lishi mumkin emas")
+            else:
+                operator.user.set_password(new_password)
+                operator.user.save()
+                messages.success(request, "✓ Parol muvaffaqiyatli o'zgartirildi!")
+                # Foydalanuvchini qayta login qilishga majbur etish
+                return redirect('auth:login')
+    
+    return render(request, 'operator/settings.html', {'operator': operator})
 
 
 @operator_required

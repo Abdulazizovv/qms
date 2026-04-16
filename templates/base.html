@@ -1,5 +1,6 @@
+{% load translation_tags %}
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -452,18 +453,18 @@
     <ul class="navbar-nav">
         {% if user.user_type == 'owner' %}
             <li><a href="{% url 'dashboard:index' %}" {% if request.resolver_match.namespace == 'dashboard' %}class="active"{% endif %}>
-                <i data-lucide="layout-dashboard"></i> Dashboard
+                <i data-lucide="layout-dashboard"></i> {{ 'dashboard'|t }}
             </a></li>
             <li><a href="{% url 'business:list' %}" {% if 'business' in request.path %}class="active"{% endif %}>
-                <i data-lucide="building-2"></i> Bizneslar
+                <i data-lucide="building-2"></i> {{ 'businesses'|t }}
             </a></li>
         {% elif user.user_type == 'operator' %}
             <li><a href="{% url 'business:operator_panel' %}" {% if 'operator' in request.path %}class="active"{% endif %}>
-                <i data-lucide="monitor"></i> Operator Panel
+                <i data-lucide="monitor"></i> {{ 'operator_panel'|t }}
             </a></li>
         {% elif user.user_type == 'client' %}
             <li><a href="{% url 'client:home' %}" {% if request.resolver_match.namespace == 'client' %}class="active"{% endif %}>
-                <i data-lucide="ticket"></i> Navbat olish
+                <i data-lucide="ticket"></i> {{ 'queue_home'|t }}
             </a></li>
         {% endif %}
     </ul>
@@ -471,16 +472,16 @@
 
     <div class="navbar-right">
         {% if user.is_authenticated %}
-        <div class="user-badge">
+        <a href="{% url 'auth:profile' %}" class="user-badge">
             <div class="user-dot"></div>
-            <span>{{ user.phone }}</span>
-        </div>
+            <span>{{ 'profile'|t }}</span>
+        </a>
         <a href="{% url 'auth:logout' %}" class="btn btn-secondary btn-sm">
-            <i data-lucide="log-out"></i> Chiqish
+            <i data-lucide="log-out"></i> {{ 'logout'|t }}
         </a>
         {% else %}
-        <a href="{% url 'auth:login' %}" class="btn btn-secondary btn-sm">Kirish</a>
-        <a href="{% url 'auth:register' %}" class="btn btn-primary btn-sm">Ro'yxatdan o'tish</a>
+        <a href="{% url 'auth:login' %}" class="btn btn-secondary btn-sm">{{ 'login'|t }}</a>
+        <a href="{% url 'auth:register' %}" class="btn btn-primary btn-sm">{{ 'register'|t }}</a>
         {% endif %}
     </div>
 </nav>

@@ -11,8 +11,16 @@
             </div>
         </div>
         <div class="card" style="padding:1rem;background:var(--bg)">
-            <div class="text-muted">Holat yangilangan</div>
-            <div style="font-weight:700;color:var(--text)">{{ ticket.updated_at|date:"H:i:s" }}</div>
+            <div class="text-muted">Taxminiy kutish</div>
+            <div style="font-weight:700;color:var(--text)">
+                {% if ticket.status == "waiting" and estimated_wait_minutes %}
+                    {{ estimated_wait_minutes }} daq
+                {% elif ticket.status == "process" %}
+                    Jarayonda
+                {% else %}
+                    -
+                {% endif %}
+            </div>
         </div>
     </div>
 
