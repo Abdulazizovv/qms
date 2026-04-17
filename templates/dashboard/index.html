@@ -13,11 +13,12 @@
     </a>
 </div>
 
-<div class="grid grid-4 fade-in-2">
+<div class="grid" style="grid-template-columns:repeat(5,1fr);gap:1.5rem" class="fade-in-2">
     <div class="stat-card"><div class="stat-value">{{ business_count }}</div><div class="stat-label">Bizneslar</div></div>
     <div class="stat-card" style="--accent:#06b6d4"><div class="stat-value">{{ branch_count }}</div><div class="stat-label">Filiallar</div></div>
     <div class="stat-card" style="--accent:#10b981"><div class="stat-value">{{ operator_count }}</div><div class="stat-label">Operatorlar</div></div>
-    <div class="stat-card" style="--accent:#f59e0b"><div class="stat-value">{{ tickets_today }}</div><div class="stat-label">Bugungi ticketlar</div></div>
+    <div class="stat-card" style="--accent:#f59e0b"><div class="stat-value">{{ tickets_today }}</div><div class="stat-label">Bugungi chiptalar</div></div>
+    <div class="stat-card" style="--accent:#8b5cf6"><div class="stat-value">{{ active_sessions }}</div><div class="stat-label">Faol sessiyalar</div></div>
 </div>
 
 <div class="fade-in-3" style="margin-top:2rem">

@@ -85,6 +85,9 @@
                             </td>
                             <td>
                                 <div style="display:flex;gap:6px;justify-content:flex-end">
+                                    {% if service.queue_type == 'appointment' or service.queue_type == 'both' %}
+                                    <a href="{% url 'business:timeslot_list' business.pk service.pk %}" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">📅 Slotlar</a>
+                                    {% endif %}
                                     <a href="{% url 'business:service_edit' business.pk service.pk %}" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">Tahrirlash</a>
                                     <a href="{% url 'business:service_delete' business.pk service.pk %}" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">O'chirish</a>
                                 </div>

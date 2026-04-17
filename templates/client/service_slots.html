@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}{{ service.title }} — Qabul vaqtlari{% endblock %}
+
+{% block full_page %}
+<main class="main-content">
+
+    <!-- Back + Header -->
+    <div class="fade-in" style="margin-bottom:1.75rem">
+        <a href="{% url 'client:branch_detail' service.branch.pk %}" style="
+            display:inline-flex;align-items:center;gap:6px;
+            font-size:0.825rem;color:var(--text-muted);text-decoration:none;margin-bottom:1rem;
+        ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            {{ service.branch.title }}
+        </a>
+
+        <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="
+                width:56px;height:56px;flex-shrink:0;
+                background:linear-gradient(135deg,var(--accent),var(--accent-2));
+                border-radius:14px;display:flex;align-items:center;justify-content:center;
+                font-size:26px;
+            ">📅</div>
+            <div>
+                <h1 style="font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)">
+                    {{ service.title }}
+                </h1>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap">
+                    <span style="font-size:0.82rem;color:var(--text-muted)">
+                        📍 {{ service.branch.title }}
+                    </span>
+                    <span style="color:var(--border)">·</span>
+                    <span style="font-size:0.82rem;color:var(--text-muted)">
+                        ⏱ ~{{ service.estimated_time_minutes }} daqiqa
+                    </span>
+                    {% if service.price %}
+                    <span style="color:var(--border)">·</span>
+                    <span style="font-size:0.82rem;color:var(--text-muted)">
+                        💰 {{ service.price|floatformat:0 }} so'm
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="fade-in-2" style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:1rem">
+        Mavjud vaqtlar
+    </h2>
+
+    {% if slots %}
+    <div class="grid grid-2 fade-in-2">
+        {% for slot in slots %}
+        <div class="card" style="display:flex;flex-direction:column;gap:0.75rem">
+
+            <!-- Date & time -->
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <div style="font-size:1.05rem;font-weight:700;color:var(--text)">
+                        {{ slot.date|date:"d.m.Y" }}
+                    </div>
+                    <div style="font-family:var(--mono);font-size:1rem;color:var(--accent);font-weight:600">
+                        {{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}
+                    </div>
+                </div>
+                {% if slot.is_full %}
+                <span class="badge badge-cancel">To'lgan</span>
+                {% else %}
+                <span class="badge badge-active">Bo'sh</span>
+                {% endif %}
+            </div>
+
+            <!-- Capacity bar -->
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-bottom:5px">
+                    <span>Band: {{ slot.booked_count }}/{{ slot.max_capacity }}</span>
+                    <span style="color:{% if slot.is_full %}var(--danger){% else %}var(--success){% endif %}">
+                        {{ slot.available_count }} o'rin bo'sh
+                    </span>
+                </div>
+                <div style="height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden">
+                    {% if slot.max_capacity %}
+                    <div style="
+                        height:100%;
+                        width:{% widthratio slot.booked_count slot.max_capacity 100 %}%;
+                        background:{% if slot.is_full %}var(--danger){% else %}var(--accent){% endif %};
+                        border-radius:3px;transition:width 0.3s;
+                    "></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="margin-top:auto">
+                {% if user.is_authenticated %}
+                    {% if slot.is_full %}
+                    <button class="btn btn-block" disabled
+                            style="background:var(--bg-hover);color:var(--text-muted);cursor:not-allowed;justify-content:center">
+                        To'lgan
+                    </button>
+                    {% else %}
+                    <form method="post" action="{% url 'client:appointment_book' service.pk slot.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-block">
+                            📅 Yozilish
+                        </button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'auth:login' %}?next={{ request.path }}"
+                   class="btn btn-secondary btn-block" style="justify-content:center">
+                    Yozilish uchun kiring
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card text-center fade-in-2" style="padding:4rem 2rem;max-width:480px;margin:0 auto">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:0.4">📅</div>
+        <h2 style="font-weight:700;margin-bottom:0.5rem">Hozircha vaqt yo'q</h2>
+        <p class="text-muted">Bu xizmat uchun hozircha mavjud qabul vaqtlari yo'q.</p>
+        <a href="{% url 'client:branch_detail' service.branch.pk %}" class="btn btn-secondary" style="display:inline-flex;margin-top:1.25rem">
+            ← Orqaga
+        </a>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

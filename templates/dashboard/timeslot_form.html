@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} — Vaqt Sloti{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:0 auto">
+
+    <!-- Header -->
+    <div class="fade-in" style="margin-bottom:1.5rem">
+        <a href="{% url 'business:timeslot_list' business.pk service.pk %}" style="
+            display:inline-flex;align-items:center;gap:6px;
+            font-size:0.825rem;color:var(--text-muted);text-decoration:none;margin-bottom:1rem;
+        ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Vaqt slotlari
+        </a>
+        <h1 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.02em">{{ action }} — Vaqt Sloti</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-top:4px">
+            {{ service.title }} · {{ service.branch.title }}
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card fade-in-2">
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom:1.25rem">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Date -->
+            <div class="form-group">
+                <label class="form-label">Sana</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                <div class="form-error">{{ form.date.errors|join:" " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Time row -->
+            <div class="grid grid-2" style="gap:1rem">
+                <div class="form-group">
+                    <label class="form-label">Boshlanish vaqti</label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}
+                    <div class="form-error">{{ form.start_time.errors|join:" " }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tugash vaqti</label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}
+                    <div class="form-error">{{ form.end_time.errors|join:" " }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Capacity -->
+            <div class="form-group">
+                <label class="form-label">Maksimal sig'im (kishi)</label>
+                {{ form.max_capacity }}
+                <div class="form-hint">Bu vaqt oralig'ida nechta kishi yozilishi mumkin</div>
+                {% if form.max_capacity.errors %}
+                <div class="form-error">{{ form.max_capacity.errors|join:" " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Active -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;
+                        background:var(--bg-hover);border-radius:var(--radius-sm);padding:12px 14px;">
+                {{ form.is_active }}
+                <label style="font-size:0.875rem;color:var(--text-dim);cursor:pointer">
+                    Slot faol (mijozlar yozila oladi)
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:10px">
+                <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    {{ action }}
+                </button>
+                <a href="{% url 'business:timeslot_list' business.pk service.pk %}" class="btn btn-secondary" style="flex:1;justify-content:center">
+                    Bekor qilish
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

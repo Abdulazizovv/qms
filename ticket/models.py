@@ -1,16 +1,15 @@
-from django.db import models
-from django.utils.crypto import get_random_string
+from django.db import models, transaction
+from django.utils import timezone
 from business.models import Operator, Service
 from common.models import BaseModel
 from user.models import MyUser
-from django.db import transaction
 
 
 class SessionStatus(models.TextChoices):
-    PENDING = 'pending', 'Kutilmoqda'      # yaratildi, boshlanmagan
-    ACTIVE  = 'active',  'Faol'            # operator ishlayapti
-    PAUSED  = 'paused',  'Tanaffusda'      # vaqtincha to'xtatildi
-    CLOSED  = 'closed',  'Yopildi'         # ish kuni tugadi
+    ACTIVE = 'active', 'Faol'
+    PAUSED = 'paused', 'Tanaffusda'
+    CLOSED = 'closed', 'Yopildi'
+
 
 class StatusTypes(models.TextChoices):
     WAITING = 'waiting', 'Kutilmoqda'
@@ -21,59 +20,50 @@ class StatusTypes(models.TextChoices):
 
 
 class Session(BaseModel):
-    operator = models.ForeignKey(
-        Operator, on_delete=models.CASCADE, related_name="sessions"
-    )
-    service = models.ForeignKey(
-        Service, on_delete=models.CASCADE, related_name="sessions"
-    )
-    status = models.CharField(
-        max_length=10, choices=SessionStatus, default=SessionStatus.PENDING
-    )
-    date = models.DateField(auto_now_add=True)
-    current_ticket = models.OneToOneField(
-        "Ticket", on_delete=models.SET_NULL,
-        null=True, blank=True, related_name="active_session"
-    )
-
-    # Sessiya vaqt kuzatuvi
-    started_at = models.DateTimeField(null=True, blank=True)
+    operator   = models.ForeignKey(Operator, on_delete=models.CASCADE, related_name='sessions')
+    service    = models.ForeignKey(Service,  on_delete=models.CASCADE, related_name='sessions')
+    status     = models.CharField(max_length=10, choices=SessionStatus, default=SessionStatus.ACTIVE)
+    date       = models.DateField(auto_now_add=True)
+    started_at = models.DateTimeField(auto_now_add=True)
     closed_at  = models.DateTimeField(null=True, blank=True)
 
+    def get_current_ticket(self):
+        return self.tickets.filter(status=StatusTypes.PROCESS).first()
+
     def __str__(self):
-        return f"Session {self.id} — {self.operator} ({self.date})"
+        return f"Sessiya #{self.id} — {self.operator} ({self.date})"
 
     class Meta:
-        unique_together = ("operator", "date")
+        ordering = ['-created_at']
 
 
 class Ticket(BaseModel):
-    session = models.ForeignKey(
-        Session, on_delete=models.RESTRICT, related_name="tickets"
+    service  = models.ForeignKey(
+        Service, on_delete=models.CASCADE, related_name='tickets'
+    )
+    session  = models.ForeignKey(
+        Session, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='tickets'
     )
     customer = models.ForeignKey(
         MyUser, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name="tickets"
+        null=True, blank=True, related_name='tickets'
     )
-    number = models.CharField(max_length=8, unique=True, editable=False)
-    status = models.CharField(
-        max_length=10, choices=StatusTypes, default=StatusTypes.WAITING
-    )
-    is_vip = models.BooleanField(default=False)
-
-    # Vaqt kuzatuvi
-    called_at  = models.DateTimeField(null=True, blank=True)
-    served_at  = models.DateTimeField(null=True, blank=True)
+    number      = models.CharField(max_length=10, editable=False)
+    status      = models.CharField(max_length=10, choices=StatusTypes, default=StatusTypes.WAITING)
+    is_vip      = models.BooleanField(default=False)
+    called_at   = models.DateTimeField(null=True, blank=True)
+    served_at   = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.number:
             with transaction.atomic():
-                prefix = self.session.service.ticket_prefix
+                prefix = self.service.ticket_prefix
                 last = (
                     Ticket.objects
-                    .select_for_update()          # qatorni lock qiladi
-                    .filter(session=self.session)
+                    .select_for_update()
+                    .filter(service=self.service)
                     .order_by('-created_at')
                     .first()
                 )
@@ -84,8 +74,68 @@ class Ticket(BaseModel):
                 self.number = f"{prefix}{next_num:03d}"
         super().save(*args, **kwargs)
 
+    def queue_position(self):
+        """Tickets ahead of this one in the waiting queue."""
+        qs = Ticket.objects.filter(service=self.service, status=StatusTypes.WAITING)
+        if self.is_vip:
+            return qs.filter(is_vip=True, created_at__lt=self.created_at).count()
+        return (
+            qs.filter(is_vip=True).count() +
+            qs.filter(is_vip=False, created_at__lt=self.created_at).count()
+        )
+
+    def estimated_wait_minutes(self):
+        return self.queue_position() * self.service.estimated_time_minutes
+
     def __str__(self):
-        return f"Ticket {self.number} — {self.get_status_display()}"
+        return f"Chipta {self.number} — {self.get_status_display()}"
 
     class Meta:
-        ordering = ["-is_vip", "created_at"]   # VIP birinchi
+        ordering = ['-is_vip', 'created_at']
+        unique_together = [('service', 'number')]
+
+
+class Feedback(BaseModel):
+    ticket  = models.OneToOneField(Ticket, on_delete=models.CASCADE, related_name='feedback')
+    rating  = models.PositiveSmallIntegerField()   # 1–5
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Baho: {self.ticket.number} — {self.rating}★"
+
+
+# ─── Appointment (time-slot booking) ──────────────────────────────────────────
+
+class AppointmentStatus(models.TextChoices):
+    PENDING   = 'pending',   'Kutilmoqda'
+    CONFIRMED = 'confirmed', 'Tasdiqlangan'
+    CANCELLED = 'cancelled', 'Bekor qilindi'
+    COMPLETED = 'completed', 'Bajarildi'
+    NO_SHOW   = 'no_show',   'Kelmadi'
+
+
+class Appointment(BaseModel):
+    """Client booking for a specific time slot (doctor / barbershop style)."""
+    from business.models import TimeSlot   # local import to avoid circular
+
+    time_slot          = models.ForeignKey(
+        'business.TimeSlot', on_delete=models.CASCADE, related_name='appointments'
+    )
+    customer           = models.ForeignKey(
+        MyUser, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='appointments'
+    )
+    status             = models.CharField(
+        max_length=15, choices=AppointmentStatus, default=AppointmentStatus.PENDING
+    )
+    notes              = models.TextField(blank=True)
+    telegram_notified  = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Qabul #{self.id} — {self.time_slot} [{self.status}]"
+
+    class Meta:
+        unique_together    = [('time_slot', 'customer')]
+        ordering           = ['time_slot__date', 'time_slot__start_time']
+        verbose_name       = 'Qabul'
+        verbose_name_plural = 'Qabullar'

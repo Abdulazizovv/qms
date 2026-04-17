@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}Chipta {{ ticket.number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ticket-wrap { max-width: 460px; margin: 0 auto; }
+
+    .ticket-number-big {
+        font-family: var(--mono);
+        font-size: 5.5rem; font-weight: 800;
+        letter-spacing: 0.06em; line-height: 1;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block; margin: 0.75rem 0;
+    }
+
+    .status-icon {
+        width: 80px; height: 80px; border-radius: 50%;
+        border: 3px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.25rem; font-size: 2.2rem;
+    }
+    .status-icon.waiting { border-color: var(--warning); background: var(--warning-soft); }
+    .status-icon.process {
+        border-color: var(--accent); background: var(--accent-soft);
+        animation: ring-pulse 2s infinite;
+    }
+    .status-icon.done    { border-color: var(--success); background: var(--success-soft); }
+    .status-icon.skipped,
+    .status-icon.cancel  { border-color: var(--danger);  background: var(--danger-soft); }
+
+    @keyframes ring-pulse {
+        0%,100% { box-shadow: 0 0 0 0   rgba(124,58,237,0.4); }
+        50%      { box-shadow: 0 0 0 16px rgba(124,58,237,0); }
+    }
+
+    /* Star rating */
+    .star-row { display: inline-flex; flex-direction: row-reverse; gap: 6px; }
+    .star-row input[type=radio] { display: none; }
+    .star-row label {
+        font-size: 2.25rem; color: var(--border-lite);
+        cursor: pointer; transition: color 0.15s, transform 0.1s; user-select: none;
+    }
+    .star-row input:checked ~ label,
+    .star-row label:hover,
+    .star-row label:hover ~ label { color: #fbbf24; }
+    .star-row label:active { transform: scale(1.2); }
+
+    /* WS live badge */
+    .ws-dot {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.72rem; color: var(--text-muted);
+        margin-top: 0.75rem;
+    }
+    .ws-dot span {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--text-muted);
+    }
+    .ws-dot.live span { background: var(--success); box-shadow: 0 0 5px var(--success); }
+</style>
+{% endblock %}
+
+{% block full_page %}
+<main class="main-content" style="
+    display:flex;align-items:center;justify-content:center;
+    min-height:calc(100vh - 60px);padding:2rem 1rem;
+">
+<div class="ticket-wrap fade-in">
+
+    <!-- Back link -->
+    <a href="{% url 'client:home' %}"
+       style="display:inline-flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--text-muted);text-decoration:none;margin-bottom:1.5rem">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Bosh sahifa
+    </a>
+
+    <div class="card" id="ticket-card" style="padding:2.25rem;text-align:center">
+
+        <!-- Status icon -->
+        <div class="status-icon {{ ticket.status }}" id="status-icon">
+            {% if is_waiting %}⏳
+            {% elif is_process %}🔔
+            {% elif is_done %}✅
+            {% elif ticket.status == 'skipped' %}↷
+            {% else %}✕{% endif %}
+        </div>
+
+        <!-- Label -->
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.25rem">
+            Chipta raqamingiz
+        </div>
+        <span class="ticket-number-big">{{ ticket.number }}</span>
+
+        <!-- Service info -->
+        <div style="font-size:0.825rem;color:var(--text-muted);margin-bottom:1.75rem">
+            {{ ticket.service.title }}
+            <span style="color:var(--border-lite)">·</span>
+            {{ ticket.service.branch.title }}
+        </div>
+
+        <!-- Dynamic status block (updated by WS or initial render) -->
+        <div id="live-status">
+            {% if is_waiting %}
+            <div id="waiting-block" style="
+                background:var(--warning-soft);border:1px solid rgba(245,158,11,0.28);
+                border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;
+            ">
+                <div id="ws-position" class="mono" style="font-size:3rem;font-weight:800;color:var(--warning);line-height:1">
+                    {{ position }}
+                </div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">kishi oldingizda navbatda</div>
+                {% if wait_mins %}
+                <div id="ws-wait" style="margin-top:10px;font-size:0.85rem;color:var(--text-dim)">
+                    Taxminiy kutish: <strong>~{{ wait_mins }} daqiqa</strong>
+                </div>
+                {% endif %}
+            </div>
+
+            {% elif is_process %}
+            <div style="
+                background:var(--accent-soft);border:1px solid rgba(124,58,237,0.28);
+                border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;
+            ">
+                <div style="font-size:1.2rem;font-weight:800;color:var(--accent-2);margin-bottom:6px">
+                    🔔 Navbatingiz keldi!
+                </div>
+                <div style="color:var(--text-muted);font-size:0.875rem">
+                    Iltimos, operatorga yaqinlashing
+                </div>
+            </div>
+
+            {% elif is_done %}
+            <div style="
+                background:var(--success-soft);border:1px solid rgba(16,185,129,0.28);
+                border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;
+            ">
+                <div style="font-weight:700;color:var(--success)">✅ Xizmat muvaffaqiyatli yakunlandi!</div>
+            </div>
+
+            {% if user.is_authenticated and not has_feedback and ticket.customer == user %}
+            <div class="card" style="text-align:left;margin-top:1rem;border-color:var(--border-lite)">
+                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1rem">
+                    Xizmatni baholang
+                </div>
+                <form method="post" action="{% url 'client:ticket_feedback' ticket.pk %}">
+                    {% csrf_token %}
+                    <div style="text-align:center;margin-bottom:1.25rem">
+                        <div class="star-row">
+                            <input type="radio" id="s5" name="rating" value="5" required>
+                            <label for="s5" title="5 — A'lo">★</label>
+                            <input type="radio" id="s4" name="rating" value="4">
+                            <label for="s4" title="4 — Yaxshi">★</label>
+                            <input type="radio" id="s3" name="rating" value="3">
+                            <label for="s3" title="3 — O'rtacha">★</label>
+                            <input type="radio" id="s2" name="rating" value="2">
+                            <label for="s2" title="2 — Yomon">★</label>
+                            <input type="radio" id="s1" name="rating" value="1">
+                            <label for="s1" title="1 — Juda yomon">★</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="comment" class="form-control" rows="2"
+                                  placeholder="Izoh (ixtiyoriy)…"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-block">Yuborish</button>
+                </form>
+            </div>
+            {% elif has_feedback %}
+            <div style="font-size:0.875rem;color:var(--text-muted)">Fikr-mulohazangiz qabul qilindi. Rahmat!</div>
+            {% endif %}
+
+            {% else %}
+            <div style="
+                background:var(--danger-soft);border:1px solid rgba(239,68,68,0.28);
+                border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;
+            ">
+                <div style="font-weight:600;color:var(--danger)">
+                    {% if ticket.status == 'skipped' %}Chipta o'tkazib yuborildi{% else %}Chipta bekor qilindi{% endif %}
+                </div>
+            </div>
+            <a href="{% url 'client:home' %}" class="btn btn-primary btn-block">Yangi navbat olish</a>
+            {% endif %}
+        </div><!-- /live-status -->
+
+        <!-- WS connection indicator (only for active statuses) -->
+        {% if is_waiting or is_process %}
+        <div class="ws-dot" id="ws-indicator">
+            <span></span>
+            <span id="ws-label">Ulanmoqda…</span>
+        </div>
+        {% endif %}
+
+    </div><!-- /card -->
+</div><!-- /ticket-wrap -->
+</main>
+{% endblock %}
+
+{% if is_waiting or is_process %}
+{% block extra_js %}
+<script>
+(function() {
+    var TICKET_NUMBER = '{{ ticket.number }}';
+    var wsProtocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+    var wsUrl = wsProtocol + location.host + '/ws/ticket/' + TICKET_NUMBER + '/';
+
+    var ws, reconnectDelay = 2000;
+    var indicator = document.getElementById('ws-indicator');
+    var wsLabel   = document.getElementById('ws-label');
+
+    function setLive(live) {
+        if (!indicator) return;
+        if (live) {
+            indicator.classList.add('live');
+            wsLabel.textContent = 'Jonli';
+        } else {
+            indicator.classList.remove('live');
+            wsLabel.textContent = 'Ulanish uzildi…';
+        }
+    }
+
+    function applyUpdate(data) {
+        var status = data.status;
+
+        // If status changed to something terminal, reload the page
+        if (status === 'done' || status === 'skipped' || status === 'cancel') {
+            location.reload();
+            return;
+        }
+
+        if (status === 'process') {
+            location.reload();
+            return;
+        }
+
+        // Update position/wait for waiting status
+        if (status === 'waiting') {
+            var posEl = document.getElementById('ws-position');
+            var waitEl = document.getElementById('ws-wait');
+            if (posEl) posEl.textContent = data.position;
+            if (waitEl) {
+                if (data.wait_mins) {
+                    waitEl.innerHTML = 'Taxminiy kutish: <strong>~' + data.wait_mins + ' daqiqa</strong>';
+                } else {
+                    waitEl.textContent = '';
+                }
+            }
+        }
+    }
+
+    function connect() {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function() { setLive(true); reconnectDelay = 2000; };
+
+        ws.onmessage = function(e) {
+            try {
+                var data = JSON.parse(e.data);
+                if (data.type === 'ticket_status') applyUpdate(data);
+            } catch(err) { console.warn('WS parse error', err); }
+        };
+
+        ws.onclose = function() {
+            setLive(false);
+            setTimeout(connect, reconnectDelay);
+            reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
+        };
+
+        ws.onerror = function() { setLive(false); };
+    }
+
+    connect();
+})();
+</script>
+{% endblock %}
+{% endif %}

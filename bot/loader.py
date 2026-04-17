@@ -1,12 +1,9 @@
-from telebot import TeleBot
-from environs import Env
+import os
+from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 
-env = Env()
-env.read_env()
+TOKEN = os.environ.get('TOKEN', '')
 
-TOKEN = env.str('TOKEN', None)
-
-if not TOKEN:
-    raise Exception('Token sozlanmagan')
-
-bot = TeleBot(token=TOKEN)
+bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
+dp  = Dispatcher(storage=MemoryStorage())

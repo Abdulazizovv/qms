@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ service.title }} — Vaqt Slotlari{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex-between fade-in" style="margin-bottom:1.5rem">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% url 'business:detail' business.pk %}" style="color:var(--text-muted);display:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+            <h1 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.02em">Vaqt Slotlari</h1>
+            <p style="color:var(--text-muted);font-size:0.875rem">{{ service.title }} — {{ service.branch.title }}</p>
+        </div>
+    </div>
+    <a href="{% url 'business:timeslot_create' business.pk service.pk %}" class="btn btn-primary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Slot qo'shish
+    </a>
+</div>
+
+<!-- Stats row -->
+<div class="grid grid-3 fade-in-2" style="margin-bottom:1.5rem">
+    <div class="stat-card">
+        <div class="stat-value">{{ slots.count }}</div>
+        <div class="stat-label">Jami slotlar</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--success)">
+        <div class="stat-value" style="color:var(--success)">{{ slots|length }}</div>
+        <div class="stat-label">Kelgusi slotlar</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--warning)">
+        <div class="stat-value" style="color:var(--accent-2)">
+            {{ service.get_queue_type_display }}
+        </div>
+        <div class="stat-label">Navbat turi</div>
+    </div>
+</div>
+
+<!-- Slots table -->
+<div class="fade-in-3">
+    {% if slots %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sana</th>
+                    <th>Boshlanish</th>
+                    <th>Tugash</th>
+                    <th>Sig'im</th>
+                    <th>Band</th>
+                    <th>Bo'sh</th>
+                    <th>Holat</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in slots %}
+                <tr>
+                    <td style="color:var(--text);font-weight:600;font-family:var(--mono)">
+                        {{ slot.date|date:"d.m.Y" }}
+                    </td>
+                    <td style="font-family:var(--mono)">{{ slot.start_time|time:"H:i" }}</td>
+                    <td style="font-family:var(--mono)">{{ slot.end_time|time:"H:i" }}</td>
+                    <td>{{ slot.max_capacity }}</td>
+                    <td>
+                        <span style="font-weight:700;color:{% if slot.is_full %}var(--danger){% else %}var(--text){% endif %}">
+                            {{ slot.booked_count }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="font-weight:700;color:{% if slot.is_full %}var(--danger){% else %}var(--success){% endif %}">
+                            {{ slot.available_count }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if not slot.is_active %}
+                            <span class="badge badge-inactive">Nofaol</span>
+                        {% elif slot.is_full %}
+                            <span class="badge badge-cancel">To'lgan</span>
+                        {% else %}
+                            <span class="badge badge-active">Bo'sh</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'business:timeslot_delete' business.pk service.pk slot.pk %}"
+                              style="display:inline"
+                              onsubmit="return confirm('Slotni o\'chirmoqchimisiz?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm"
+                                    style="padding:4px 10px;font-size:0.75rem;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)">
+                                O'chirish
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:3rem 2rem">
+        <div style="font-size:3rem;margin-bottom:0.75rem">📅</div>
+        <h3 style="font-weight:700;margin-bottom:0.5rem">Hali vaqt sloti yo'q</h3>
+        <p class="text-muted" style="margin-bottom:1.25rem">Mijozlar yozilishi uchun vaqt slotlari qo'shing</p>
+        <a href="{% url 'business:timeslot_create' business.pk service.pk %}" class="btn btn-primary" style="display:inline-flex">
+            Birinchi slotni qo'shish
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

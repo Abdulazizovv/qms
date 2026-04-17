@@ -64,28 +64,64 @@ class WorkingDay(BaseModel):
 
 
 
+class QueueType(models.TextChoices):
+    REALTIME    = 'realtime',    'Real-time navbat'
+    APPOINTMENT = 'appointment', 'Qabulga yozilish'
+    BOTH        = 'both',        'Ikkalasi ham'
+
+
 class Service(BaseModel):
     STATUS_CHOICES = [
-        ("active",   "Ishlamoqda"),
-        ("break",    "Tanaffus vaqtida"),
-        ("inactive", "Xizmat vaqtincha faol emas"),
+        ('active',   'Ishlamoqda'),
+        ('break',    'Tanaffus vaqtida'),
+        ('inactive', 'Xizmat vaqtincha faol emas'),
     ]
 
     branch = models.ForeignKey(
-        Branch, on_delete=models.CASCADE, related_name="services"
+        Branch, on_delete=models.CASCADE, related_name='services'
     )
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    requirements = models.TextField(blank=True, null=True)
-    estimated_time_minutes = models.PositiveIntegerField()   # nom aniqroq
-    status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default="active"
-    )
-    price = models.PositiveBigIntegerField(default=0)
-    ticket_prefix = models.CharField(max_length=5, default="A")  # "unicode" → "ticket_prefix"
+    title                  = models.CharField(max_length=255)
+    description            = models.TextField(blank=True, null=True)
+    requirements           = models.TextField(blank=True, null=True)
+    estimated_time_minutes = models.PositiveIntegerField()
+    status                 = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    price                  = models.PositiveBigIntegerField(default=0)
+    ticket_prefix          = models.CharField(max_length=5, default='A')
+    queue_type             = models.CharField(max_length=15, choices=QueueType, default=QueueType.REALTIME)
 
     def __str__(self):
         return f"{self.branch.title} — {self.title}"
+
+
+class TimeSlot(BaseModel):
+    """Available appointment slots set by the business owner."""
+    service      = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='time_slots')
+    date         = models.DateField()
+    start_time   = models.TimeField()
+    end_time     = models.TimeField()
+    max_capacity = models.PositiveIntegerField(default=1)
+    is_active    = models.BooleanField(default=True)
+
+    @property
+    def booked_count(self):
+        return self.appointments.filter(status__in=['pending', 'confirmed']).count()
+
+    @property
+    def available_count(self):
+        return max(0, self.max_capacity - self.booked_count)
+
+    @property
+    def is_full(self):
+        return self.available_count == 0
+
+    def __str__(self):
+        return f"{self.service.title} | {self.date} {self.start_time:%H:%M}–{self.end_time:%H:%M}"
+
+    class Meta:
+        ordering           = ['date', 'start_time']
+        unique_together    = [('service', 'date', 'start_time')]
+        verbose_name       = 'Vaqt sloti'
+        verbose_name_plural = 'Vaqt slotlari'
     
     
     

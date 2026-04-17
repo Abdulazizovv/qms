@@ -26,4 +26,9 @@ urlpatterns = [
     path('<int:biz_pk>/operators/create/',        views.operator_create, name='operator_create'),
     path('<int:biz_pk>/operators/<int:pk>/edit/', views.operator_edit,   name='operator_edit'),
     path('<int:biz_pk>/operators/<int:pk>/delete/', views.operator_delete, name='operator_delete'),
+
+    # Time Slots
+    path('<int:biz_pk>/service/<int:service_pk>/slots/',                      views.timeslot_list,   name='timeslot_list'),
+    path('<int:biz_pk>/service/<int:service_pk>/slots/create/',               views.timeslot_create, name='timeslot_create'),
+    path('<int:biz_pk>/service/<int:service_pk>/slots/<int:pk>/delete/',      views.timeslot_delete, name='timeslot_delete'),
 ]

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ branch.title }} — Xizmatlar{% endblock %}
+
+{% block full_page %}
+<main class="main-content">
+
+    <!-- Back + Header -->
+    <div class="fade-in" style="margin-bottom:1.75rem">
+        <a href="{% url 'client:home' %}" style="
+            display:inline-flex;align-items:center;gap:6px;
+            font-size:0.825rem;color:var(--text-muted);text-decoration:none;margin-bottom:1rem;
+        ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Barcha bizneslar
+        </a>
+
+        <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="
+                width:56px;height:56px;flex-shrink:0;
+                background:linear-gradient(135deg,var(--accent),var(--accent-2));
+                border-radius:14px;display:flex;align-items:center;justify-content:center;
+                font-size:26px;
+            ">🏪</div>
+            <div>
+                <h1 style="font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)">
+                    {{ branch.title }}
+                </h1>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap">
+                    <span style="font-size:0.82rem;color:var(--text-muted)">
+                        📍 {{ branch.location }}
+                    </span>
+                    {% if branch.description %}
+                    <span style="color:var(--border)">·</span>
+                    <span style="font-size:0.82rem;color:var(--text-muted)">{{ branch.description }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services -->
+    {% if services_with_count %}
+    <div class="grid grid-2 fade-in-2">
+        {% for item in services_with_count %}
+        <div class="card" style="display:flex;flex-direction:column">
+
+            <!-- Service header -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.875rem">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:1.05rem;color:var(--text);margin-bottom:4px">
+                        {{ item.service.title }}
+                    </div>
+                    {% if item.service.description %}
+                    <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5">
+                        {{ item.service.description|truncatechars:90 }}
+                    </div>
+                    {% endif %}
+                </div>
+                <span style="
+                    font-family:var(--mono);font-size:1.4rem;font-weight:800;
+                    color:var(--accent);letter-spacing:0.06em;
+                    background:rgba(59,130,246,0.08);
+                    border:1px solid rgba(59,130,246,0.2);
+                    border-radius:8px;padding:4px 12px;
+                    flex-shrink:0;margin-left:12px;
+                ">{{ item.service.ticket_prefix }}</span>
+            </div>
+
+            <!-- Meta info -->
+            <div style="display:flex;gap:16px;margin-bottom:1.25rem;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--text-muted)">
+                    <span>⏱</span>
+                    <span>~{{ item.service.estimated_time_minutes }} daqiqa</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--text-muted)">
+                    {% if item.service.price %}
+                    <span>💰 {{ item.service.price|floatformat:0 }} so'm</span>
+                    {% else %}
+                    <span style="color:var(--success)">✓ Bepul</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:0.8rem">
+                    <span>🎫</span>
+                    <span>
+                        Kutmoqda:&nbsp;<strong style="color:{% if item.waiting_count %}var(--warning){% else %}var(--success){% endif %}">
+                            {{ item.waiting_count }}
+                        </strong>
+                    </span>
+                </div>
+            </div>
+
+            {% if item.service.requirements %}
+            <div style="
+                background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);
+                border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:1rem;
+                font-size:0.78rem;color:var(--text-dim);line-height:1.5;
+            ">
+                📋 {{ item.service.requirements }}
+            </div>
+            {% endif %}
+
+            <!-- CTA -->
+            <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+                {% if user.is_authenticated %}
+                    {% if item.service.queue_type == 'realtime' or item.service.queue_type == 'both' %}
+                    <form method="post" action="{% url 'client:ticket_take' branch.pk item.service.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary btn-block">
+                            🎫 Navbat olish
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if item.service.queue_type == 'appointment' or item.service.queue_type == 'both' %}
+                    <a href="{% url 'client:service_slots' item.service.pk %}"
+                       class="btn btn-secondary btn-block" style="justify-content:center">
+                        📅 Qabul vaqtini tanlash
+                    </a>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'auth:login' %}?next={{ request.path }}"
+                   class="btn btn-secondary btn-block" style="justify-content:center">
+                    Navbat olish uchun kiring
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card text-center fade-in-2" style="padding:4rem 2rem;max-width:480px;margin:0 auto">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:0.4">🔧</div>
+        <h2 style="font-weight:700;margin-bottom:0.5rem">Hozircha xizmat yo'q</h2>
+        <p class="text-muted">Bu filialda faol xizmatlar mavjud emas.</p>
+        <a href="{% url 'client:home' %}" class="btn btn-secondary" style="display:inline-flex;margin-top:1.25rem">
+            ← Orqaga
+        </a>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

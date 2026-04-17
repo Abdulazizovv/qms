@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Operatorlar — {{ business.title }}{% endblock %}
+
+{% block content %}
+<div class="flex-between fade-in" style="margin-bottom:1.5rem">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="{% url 'business:detail' business.pk %}"
+           style="color:var(--text-muted);display:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </a>
+        <div>
+            <h1 style="font-size:1.4rem;font-weight:700;letter-spacing:-0.02em">Operatorlar</h1>
+            <p style="color:var(--text-muted);font-size:0.825rem">{{ business.title }}</p>
+        </div>
+    </div>
+    <a href="{% url 'business:operator_create' business.pk %}" class="btn btn-primary btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Operator qo'shish
+    </a>
+</div>
+
+{% if operators %}
+<div class="table-wrap fade-in-2">
+    <table>
+        <thead>
+            <tr>
+                <th>Operator</th>
+                <th>Telefon</th>
+                <th>Filial</th>
+                <th>Stol №</th>
+                <th>Xizmatlar</th>
+                <th>Holat</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in operators %}
+            <tr>
+                <td style="color:var(--text);font-weight:600">{{ op.user.first_name|default:"—" }}</td>
+                <td style="font-family:var(--mono);font-size:0.82rem">{{ op.user.phone }}</td>
+                <td>{{ op.branch.title }}</td>
+                <td>
+                    <span style="font-family:var(--mono);background:var(--bg-hover);
+                                 padding:2px 8px;border-radius:4px;font-size:0.8rem">
+                        {{ op.desk_number }}
+                    </span>
+                </td>
+                <td style="color:var(--text-muted);font-size:0.82rem">
+                    {{ op.services.count }} xizmat
+                </td>
+                <td>
+                    {% if op.is_active %}
+                    <span class="badge badge-active">Faol</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Faol emas</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;justify-content:flex-end">
+                        <a href="{% url 'business:operator_edit' business.pk op.pk %}"
+                           class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:0.75rem">
+                            Tahrirlash
+                        </a>
+                        <a href="{% url 'business:operator_delete' business.pk op.pk %}"
+                           class="btn btn-sm"
+                           style="padding:4px 10px;font-size:0.75rem;
+                                  background:rgba(239,68,68,0.1);color:#ef4444;
+                                  border:1px solid rgba(239,68,68,0.2)">
+                            O'chirish
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card text-center fade-in-2" style="padding:4rem">
+    <div style="font-size:3rem;margin-bottom:1rem;opacity:0.4">👤</div>
+    <h3 style="font-weight:700;margin-bottom:0.5rem">Hali operator qo'shilmagan</h3>
+    <p class="text-muted" style="margin-bottom:1.25rem">
+        Operatorlar xizmat navbatlarini boshqaradi
+    </p>
+    <a href="{% url 'business:operator_create' business.pk %}"
+       class="btn btn-primary" style="display:inline-flex">
+        Operator qo'shish
+    </a>
+</div>
+{% endif %}
+{% endblock %}

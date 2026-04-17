@@ -1,6 +1,251 @@
 {% extends "base.html" %}
 {% block title %}Operator Panel{% endblock %}
+
 {% block content %}
-<div class="page-header"><h1>Operator Panel</h1></div>
-<div class="card">Tez orada...</div>
+
+{% if not session %}
+<!-- ──────────────── No active session ──────────────── -->
+<div style="max-width:500px;margin:4rem auto" class="fade-in">
+    <div class="text-center" style="margin-bottom:2rem">
+        <div style="font-size:3rem;margin-bottom:0.75rem">🖥</div>
+        <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:-0.03em">Ish kunini boshlash</h1>
+        <p class="text-muted" style="margin-top:6px">Xizmat turini tanlang va navbat qabulini boshlang</p>
+    </div>
+
+    {% if available_services %}
+    <div class="card" style="padding:1.75rem">
+        <form method="post" action="{% url 'operator:session_start' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Xizmat turi</label>
+                <select name="service_id" class="form-control" required>
+                    {% for svc in available_services %}
+                    <option value="{{ svc.pk }}">[{{ svc.ticket_prefix }}] {{ svc.title }} — {{ svc.branch.title }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-hint">Bugun qaysi xizmatda ishlaysiz?</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:0.5rem">
+                ▶ Sessiyani boshlash
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:2.5rem">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">⚠️</div>
+        <p style="color:var(--warning);font-weight:600;margin-bottom:0.5rem">Xizmat topilmadi</p>
+        <p class="text-muted" style="font-size:0.875rem">Sizga hech qanday xizmat tayinlanmagan.<br>Biznes egasiga murojaat qiling.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- ──────────────── Active session ──────────────── -->
+
+<!-- Session status bar -->
+<div id="session-bar" class="flex-between fade-in" style="
+    background:var(--bg-card);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:0.875rem 1.25rem;margin-bottom:1.5rem
+">
+    <div class="flex-center gap-2">
+        <span class="badge badge-active">● Faol</span>
+        <span style="font-weight:700;color:var(--text)">{{ session.service.title }}</span>
+        <span class="text-muted">·</span>
+        <span class="text-muted" style="font-size:0.82rem">📍 {{ session.service.branch.title }}</span>
+        <span class="text-muted">·</span>
+        <span class="mono text-muted" style="font-size:0.8rem">{{ session.date }}</span>
+    </div>
+    <div class="flex-center gap-2">
+        <span id="ws-badge" style="
+            font-size:0.72rem;background:var(--bg-hover);border:1px solid var(--border);
+            border-radius:50px;padding:4px 12px;color:var(--text-muted)
+        ">⚡ Ulanmoqda…</span>
+        <form method="post" action="{% url 'operator:session_close' session.pk %}"
+              onsubmit="return confirm('Ish kunini yakunlamoqchimisiz?')">
+            {% csrf_token %}
+            <button class="btn btn-sm"
+                    style="background:var(--danger-soft);color:var(--danger);border:1px solid rgba(239,68,68,0.25)">
+                ✕ Yakunlash
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Live panel -->
+<div class="grid" style="grid-template-columns:1fr 1.1fr;gap:1.5rem;align-items:start" class="fade-in-2">
+
+    <!-- Left: current ticket -->
+    <div>
+        <div class="card" id="current-card" style="text-align:center;padding:2rem 1.5rem">
+            <!-- Filled by JS -->
+            <div style="color:var(--text-muted);font-size:0.875rem">Ulanmoqda…</div>
+        </div>
+
+        <!-- Quick stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
+                <div id="stat-waiting" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--warning)">—</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Kutmoqda</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
+                <div id="stat-serving" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--accent-2)">—</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Xizmatda</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
+                <div id="stat-done" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--success)">{{ stats.done }}</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Bajarildi</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: queue list -->
+    <div class="card" id="queue-list" style="padding:1.25rem">
+        <div class="flex-between" style="margin-bottom:1rem">
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">
+                Navbat ro'yxati
+            </div>
+            <div id="waiting-badge" style="
+                font-size:0.72rem;background:var(--bg-hover);border:1px solid var(--border);
+                border-radius:50px;padding:3px 10px;color:var(--text-muted)
+            ">… kishi</div>
+        </div>
+        <div id="queue-items">
+            <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:0.875rem">Yuklanmoqda…</div>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
 {% endblock %}
+
+{% if session %}
+{% block extra_js %}
+<script>
+(function() {
+    var SESSION_ID = {{ session.pk }};
+    var wsProtocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+    var wsUrl = wsProtocol + location.host + '/ws/queue/' + SESSION_ID + '/';
+
+    var ws, reconnectDelay = 2000;
+    var wsBadge = document.getElementById('ws-badge');
+
+    function setStatus(text, color) {
+        if (wsBadge) {
+            wsBadge.textContent = text;
+            wsBadge.style.color = color;
+            wsBadge.style.borderColor = color + '44';
+        }
+    }
+
+    function renderCurrentCard(data) {
+        var card = document.getElementById('current-card');
+        if (!card) return;
+
+        if (data.current_ticket) {
+            var t = data.current_ticket;
+            card.innerHTML = [
+                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>',
+                '<div style="position:relative;display:inline-block;margin-bottom:0.75rem">',
+                '  <div style="font-family:var(--mono);font-size:5rem;font-weight:800;letter-spacing:0.06em;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">' + t.number + '</div>',
+                t.is_vip ? '<span style="position:absolute;top:-8px;right:-38px;background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:50px;font-size:0.65rem;font-weight:700;padding:2px 8px;letter-spacing:0.05em">VIP</span>' : '',
+                '</div>',
+                '<div style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.5rem">',
+                '  <form method="post" action="/operator/ticket/' + t.id + '/finish/">',
+                '    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
+                '    <button class="btn btn-success btn-lg" title="Xizmat yakunlandi">✓ Yakunlash</button>',
+                '  </form>',
+                '  <form method="post" action="/operator/ticket/' + t.id + '/skip/">',
+                '    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
+                '    <button class="btn btn-lg" style="background:var(--warning-soft);color:var(--warning);border:1px solid rgba(245,158,11,0.3)" title="Mijoz yo\'q">⏭ O\'tkazish</button>',
+                '  </form>',
+                '</div>',
+            ].join('');
+            document.getElementById('stat-serving').textContent = '1';
+        } else {
+            card.innerHTML = [
+                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>',
+                '<div style="font-size:4.5rem;color:var(--text-muted);opacity:0.2;margin:1rem 0;font-family:var(--mono)">—</div>',
+                '<div class="text-muted" style="margin-bottom:1.5rem;font-size:0.9rem">' +
+                    (data.waiting_count ? ('<strong style="color:var(--text)">' + data.waiting_count + '</strong> kishi navbatda kutmoqda') : 'Navbatda hech kim yo\'q') +
+                '</div>',
+                '<form method="post" action="{% url 'operator:ticket_call_next' session.pk %}">',
+                '  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
+                '  <button class="btn btn-primary btn-lg btn-block"' + (data.waiting_count ? '' : ' disabled') + '>',
+                '    🔔 Keyingisini chaqirish',
+                '  </button>',
+                '</form>',
+            ].join('');
+            document.getElementById('stat-serving').textContent = '0';
+        }
+
+        document.getElementById('stat-waiting').textContent = data.waiting_count;
+    }
+
+    function renderQueue(data) {
+        document.getElementById('waiting-badge').textContent = data.waiting_count + ' kishi';
+        var container = document.getElementById('queue-items');
+        if (!container) return;
+
+        if (!data.waiting || data.waiting.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.3">🎫</div><div style="font-size:0.875rem">Navbatda hech kim yo\'q</div></div>';
+            return;
+        }
+
+        var html = '<div style="display:flex;flex-direction:column;gap:6px">';
+        data.waiting.forEach(function(t, i) {
+            var isFirst = (i === 0);
+            html += [
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;',
+                'background:' + (isFirst ? 'var(--accent-soft)' : 'var(--bg-hover)') + ';',
+                'border:1px solid ' + (isFirst ? 'rgba(124,58,237,0.3)' : 'transparent') + ';',
+                'border-radius:var(--radius-sm);">',
+                '  <div style="display:flex;align-items:center;gap:10px">',
+                isFirst
+                    ? '<span style="font-size:0.65rem;color:var(--accent-2);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">KEYINGI</span>'
+                    : '<span style="font-size:0.72rem;color:var(--text-muted);font-weight:600">' + (i + 1) + '</span>',
+                '    <span style="font-family:var(--mono);font-size:1rem;font-weight:700;color:' + (isFirst ? 'var(--accent-2)' : 'var(--text)') + '">' + t.number + '</span>',
+                t.is_vip ? '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;border-radius:50px;padding:2px 7px;font-size:0.65rem;font-weight:700">VIP</span>' : '',
+                '  </div>',
+                '  <span style="font-size:0.72rem;color:var(--text-muted);font-family:var(--mono)">' + t.created_at + '</span>',
+                '</div>',
+            ].join('');
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function connect() {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function() {
+            setStatus('⚡ Jonli', 'var(--success)');
+            reconnectDelay = 2000;
+        };
+
+        ws.onmessage = function(event) {
+            try {
+                var data = JSON.parse(event.data);
+                if (data.type === 'queue_update') {
+                    renderCurrentCard(data);
+                    renderQueue(data);
+                }
+            } catch(e) { console.warn('WS parse error', e); }
+        };
+
+        ws.onclose = function() {
+            setStatus('● Ulanish uzildi', 'var(--danger)');
+            setTimeout(connect, reconnectDelay);
+            reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
+        };
+
+        ws.onerror = function() {
+            setStatus('● Xato', 'var(--danger)');
+        };
+    }
+
+    connect();
+})();
+</script>
+{% endblock %}
+{% endif %}

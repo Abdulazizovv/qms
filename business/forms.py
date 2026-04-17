@@ -1,5 +1,5 @@
 from django import forms
-from business.models import Business, Branch, Service, Operator
+from business.models import Business, Branch, Service, Operator, TimeSlot
 from user.models import MyUser, UserTypes
 
 
@@ -30,7 +30,7 @@ class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
         fields = ['title', 'description', 'requirements',
-                  'estimated_time_minutes', 'price', 'ticket_prefix', 'status']
+                  'estimated_time_minutes', 'price', 'ticket_prefix', 'status', 'queue_type']
         widgets = {
             'title':                  forms.TextInput(attrs={'placeholder': 'Xizmat nomi', 'class': 'form-control'}),
             'description':            forms.Textarea(attrs={'placeholder': 'Xizmat haqida...', 'class': 'form-control', 'rows': 2}),
@@ -39,6 +39,20 @@ class ServiceForm(forms.ModelForm):
             'price':                  forms.NumberInput(attrs={'placeholder': '0', 'class': 'form-control', 'min': 0}),
             'ticket_prefix':          forms.TextInput(attrs={'placeholder': 'A', 'class': 'form-control', 'maxlength': 5}),
             'status':                 forms.Select(attrs={'class': 'form-control'}),
+            'queue_type':             forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class TimeSlotForm(forms.ModelForm):
+    class Meta:
+        model = TimeSlot
+        fields = ['date', 'start_time', 'end_time', 'max_capacity', 'is_active']
+        widgets = {
+            'date':         forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'start_time':   forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'end_time':     forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'max_capacity': forms.NumberInput(attrs={'min': 1, 'class': 'form-control'}),
+            'is_active':    forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
 
 

@@ -1,0 +1,96 @@
+version: "3.9"
+
+# ─── Shared env for all Django-based services ────────────────────────────────
+x-django-env: &django-env
+  env_file: .env
+  environment:
+    USE_POSTGRES: "True"
+    DB_HOST: db
+    DB_PORT: "5432"
+    REDIS_URL: redis://redis:6379/0
+
+x-django-base: &django-base
+  build: .
+  <<: *django-env
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - media_volume:/app/media
+    - static_volume:/app/staticfiles
+
+# ─── Services ────────────────────────────────────────────────────────────────
+services:
+
+  # PostgreSQL
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-qms}
+      POSTGRES_USER:     ${DB_USER:-qms}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-qms_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-qms}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Redis (channel layer + Celery broker)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Daphne — ASGI server (HTTP + WebSocket)
+  web:
+    <<: *django-base
+    restart: unless-stopped
+    command: daphne -b 0.0.0.0 -p 8000 core.asgi:application
+    expose:
+      - "8000"
+
+  # Celery worker
+  celery:
+    <<: *django-base
+    restart: unless-stopped
+    command: celery -A core worker -l info --concurrency=4
+
+  # Celery beat (scheduled tasks)
+  celery-beat:
+    <<: *django-base
+    restart: unless-stopped
+    command: celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  # Telegram bot (aiogram polling)
+  bot:
+    <<: *django-base
+    restart: unless-stopped
+    command: python -m bot.main
+
+  # Nginx — static files + reverse proxy to Daphne
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+
+# ─── Volumes ─────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  media_volume:
+  static_volume:

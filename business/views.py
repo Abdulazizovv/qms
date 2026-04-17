@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from business.models import Business, Branch, Service, Operator
 from business.forms import BusinessForm, BranchForm, ServiceForm, OperatorCreateForm, OperatorEditForm
-from ticket.models import Ticket, Session
+from ticket.models import Session, SessionStatus, Ticket
 from django.utils import timezone
 
 
@@ -26,14 +26,18 @@ def dashboard_index(request):
     branches   = Branch.objects.filter(business__in=businesses)
     operators  = Operator.objects.filter(branch__in=branches)
     today      = timezone.now().date()
-    tickets_today = Ticket.objects.filter(session__service__branch__in=branches, created_at__date=today).count()
+    tickets_today   = Ticket.objects.filter(service__branch__in=branches, created_at__date=today).count()
+    active_sessions = Session.objects.filter(
+        service__branch__in=branches, status=SessionStatus.ACTIVE, date=today
+    ).count()
 
     ctx = {
-        'businesses':    businesses,
+        'businesses':     businesses,
         'business_count': businesses.count(),
-        'branch_count':  branches.count(),
+        'branch_count':   branches.count(),
         'operator_count': operators.count(),
-        'tickets_today': tickets_today,
+        'tickets_today':  tickets_today,
+        'active_sessions': active_sessions,
     }
     return render(request, 'dashboard/index.html', ctx)
 
@@ -212,3 +216,48 @@ def operator_delete(request, biz_pk, pk):
         messages.success(request, "Operator o'chirildi")
         return redirect('business:detail', pk=biz_pk)
     return render(request, 'dashboard/confirm_delete.html', {'obj': operator, 'type': 'operator', 'business': business})
+
+
+# ─── Time Slots (appointment mode) ────────────────────────────────────────────
+
+@owner_required
+def timeslot_list(request, biz_pk, service_pk):
+    business = get_object_or_404(Business, pk=biz_pk, owner=request.user)
+    service  = get_object_or_404(Service, pk=service_pk, branch__business=business)
+    today    = timezone.now().date()
+    slots    = service.time_slots.filter(date__gte=today).order_by('date', 'start_time')
+    return render(request, 'dashboard/timeslot_list.html', {
+        'business': business, 'service': service, 'slots': slots,
+    })
+
+
+@owner_required
+def timeslot_create(request, biz_pk, service_pk):
+    from business.forms import TimeSlotForm
+    business = get_object_or_404(Business, pk=biz_pk, owner=request.user)
+    service  = get_object_or_404(Service, pk=service_pk, branch__business=business)
+
+    form = TimeSlotForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        slot = form.save(commit=False)
+        slot.service = service
+        slot.save()
+        messages.success(request, "Vaqt sloti qo'shildi!")
+        return redirect('business:timeslot_list', biz_pk=biz_pk, service_pk=service_pk)
+    return render(request, 'dashboard/timeslot_form.html', {
+        'form': form, 'business': business, 'service': service, 'action': 'Yaratish',
+    })
+
+
+@owner_required
+def timeslot_delete(request, biz_pk, service_pk, pk):
+    business = get_object_or_404(Business, pk=biz_pk, owner=request.user)
+    service  = get_object_or_404(Service, pk=service_pk, branch__business=business)
+    slot     = get_object_or_404(service.time_slots, pk=pk)
+    if request.method == 'POST':
+        slot.delete()
+        messages.success(request, "Vaqt sloti o'chirildi")
+        return redirect('business:timeslot_list', biz_pk=biz_pk, service_pk=service_pk)
+    return render(request, 'dashboard/confirm_delete.html', {
+        'obj': slot, 'type': 'vaqt sloti', 'business': business,
+    })
