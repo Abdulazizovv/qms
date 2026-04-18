@@ -674,6 +674,411 @@
 })();
 </script>
 
+<!-- PERSPECTIVES -->
+<section id="perspectives" style="background:var(--bg);border-top:1px solid var(--border)">
+<div class="container">
+    <div class="section-label" style="text-align:center">Barcha tomonlar</div>
+    <h2 class="section-title" style="text-align:center;margin:0 auto 0.75rem;max-width:600px">Har kimga qulay interfeys</h2>
+    <p class="section-desc" style="text-align:center;margin:0 auto 3rem">Mijoz, operator va biznes egasi — har biri o'z paneliga ega.</p>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;justify-content:center;margin-bottom:2.5rem">
+        <div style="display:inline-flex;background:#fff;border:1px solid var(--border);border-radius:50px;padding:5px;gap:4px">
+            <button onclick="switchTab('client')" id="tab-client"
+                    style="padding:8px 22px;border-radius:50px;border:none;font-family:var(--font);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--accent),#6B54CC);color:#fff;box-shadow:0 3px 12px rgba(133,114,228,0.35)">
+                📱 Mijoz
+            </button>
+            <button onclick="switchTab('owner')" id="tab-owner"
+                    style="padding:8px 22px;border-radius:50px;border:none;font-family:var(--font);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:transparent;color:var(--text-dim)">
+                📊 Biznes egasi
+            </button>
+            <button onclick="switchTab('auth')" id="tab-auth"
+                    style="padding:8px 22px;border-radius:50px;border:none;font-family:var(--font);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;background:transparent;color:var(--text-dim)">
+                🔐 Kirish / Ro'yxat
+            </button>
+        </div>
+    </div>
+
+    <!-- ── CLIENT TAB ── -->
+    <div id="pane-client" style="max-width:420px;margin:0 auto">
+        <div style="border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.16);border:1px solid var(--border)">
+            <!-- Phone status bar -->
+            <div style="background:linear-gradient(135deg,var(--accent),#6B54CC);padding:10px 18px;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:0.72rem;color:rgba(255,255,255,0.8);font-weight:600">9:41</span>
+                <span style="font-size:0.75rem;color:#fff;font-weight:800;letter-spacing:-0.02em">Tartibly</span>
+                <span style="font-size:0.72rem;color:rgba(255,255,255,0.8)">●●●</span>
+            </div>
+            <!-- Ticket card -->
+            <div style="background:#F8F9FA;padding:24px 20px">
+                <!-- Status icon -->
+                <div style="text-align:center;margin-bottom:16px">
+                    <div id="c-icon" style="width:72px;height:72px;border-radius:50%;background:rgba(217,119,6,0.1);border:2px solid rgba(217,119,6,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:28px;transition:all 0.4s">⏳</div>
+                </div>
+                <div style="text-align:center">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-bottom:6px">Chipta raqamingiz</div>
+                    <div id="c-number" style="font-size:5rem;font-weight:900;letter-spacing:-0.04em;font-family:var(--mono);background:linear-gradient(135deg,var(--accent),var(--accent-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;transition:opacity 0.3s">A014</div>
+                    <div style="font-size:0.82rem;color:var(--text-dim);margin-top:4px">Pasport xizmati · Markaziy filial</div>
+                </div>
+                <!-- Queue position -->
+                <div id="c-waiting-block" style="margin-top:18px;background:rgba(217,119,6,0.07);border:1px solid rgba(217,119,6,0.2);border-radius:var(--radius);padding:14px;text-align:center;transition:all 0.4s">
+                    <div id="c-pos" style="font-size:2.8rem;font-weight:900;color:#d97706;font-family:var(--mono);line-height:1;transition:all 0.4s">5</div>
+                    <div style="font-size:0.78rem;color:var(--text-dim);margin-top:3px">kishi oldingizda</div>
+                    <div id="c-wait" style="font-size:0.82rem;color:var(--text-dim);margin-top:6px">Taxminiy kutish: <strong>~25 daqiqa</strong></div>
+                </div>
+                <!-- Info rows -->
+                <div style="margin-top:14px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+                    <div style="display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);font-size:0.79rem">
+                        <span style="color:var(--text-dim)">💼 Xizmat</span>
+                        <span style="font-weight:600;color:var(--text)">Pasport xizmati</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);font-size:0.79rem">
+                        <span style="color:var(--text-dim)">📍 Filial</span>
+                        <span style="font-weight:600;color:var(--text)">Markaziy filial</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:9px 14px;font-size:0.79rem">
+                        <span style="color:var(--text-dim)">📅 Olindi</span>
+                        <span style="font-weight:600;color:var(--text)">Bugun 10:24</span>
+                    </div>
+                </div>
+                <!-- WS dot -->
+                <div style="text-align:center;margin-top:12px">
+                    <span id="c-ws" style="font-size:0.7rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:5px">
+                        <span style="width:6px;height:6px;border-radius:50%;background:#059669;animation:pulse 2s infinite;display:inline-block"></span>
+                        Jonli yangilanish
+                    </span>
+                </div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:0.82rem;color:var(--text-dim);margin-top:1.25rem">Navbat o'rnini real vaqtda kuzating · Telegram orqali xabar oling</p>
+    </div>
+
+    <!-- ── OWNER TAB ── -->
+    <div id="pane-owner" style="display:none;max-width:900px;margin:0 auto">
+        <div style="border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.16);border:1px solid var(--border)">
+            <!-- Browser chrome -->
+            <div style="background:#f0eefe;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px">
+                <div style="width:11px;height:11px;border-radius:50%;background:#BD5182;opacity:0.8"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:#d97706;opacity:0.8"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:#059669;opacity:0.8"></div>
+                <div style="flex:1;background:#fff;border-radius:6px;padding:5px 12px;font-size:0.74rem;font-family:var(--mono);color:var(--text-dim);margin:0 12px;border:1px solid var(--border);text-align:left">tartibly.uz/dashboard/</div>
+            </div>
+            <!-- Dashboard -->
+            <div style="background:#F8F9FA;padding:20px;display:grid;grid-template-columns:190px 1fr;gap:16px;min-height:400px;text-align:left">
+                <!-- Sidebar -->
+                <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 10px">
+                    <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);padding:0 8px;margin-bottom:8px">Boshqaruv</div>
+                    <div style="display:flex;flex-direction:column;gap:2px">
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:rgba(133,114,228,0.1);color:var(--accent);font-size:0.8rem;font-weight:600">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                            Dashboard
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.8rem">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                            Filiallar
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.8rem">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Operatorlar
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.8rem">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            Statistika
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.8rem">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                            Monitor
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;padding:10px;background:rgba(133,114,228,0.06);border-radius:8px;border:1px solid rgba(133,114,228,0.15)">
+                        <div style="font-size:0.7rem;font-weight:700;color:var(--accent);margin-bottom:6px">Mening biznesim</div>
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text)">MFY № 14</div>
+                        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">3 ta filial · 12 operator</div>
+                    </div>
+                </div>
+                <!-- Main -->
+                <div style="display:flex;flex-direction:column;gap:12px">
+                    <!-- Big stats -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)"></div>
+                            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px">Bugungi</div>
+                            <div id="o-today" style="font-size:1.6rem;font-weight:900;color:var(--text);font-family:var(--mono)">284</div>
+                        </div>
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#059669"></div>
+                            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px">Bajarildi</div>
+                            <div id="o-done" style="font-size:1.6rem;font-weight:900;color:var(--text);font-family:var(--mono)">261</div>
+                        </div>
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#d97706"></div>
+                            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px">Kutmoqda</div>
+                            <div id="o-wait" style="font-size:1.6rem;font-weight:900;color:var(--text);font-family:var(--mono)">23</div>
+                        </div>
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent-pink)"></div>
+                            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px">O'rt. vaqt</div>
+                            <div style="font-size:1.6rem;font-weight:900;color:var(--text);font-family:var(--mono)">3.8<span style="font-size:0.8rem">m</span></div>
+                        </div>
+                    </div>
+                    <!-- Chart bar -->
+                    <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px">
+                        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;letter-spacing:0.08em">Haftalik chipta grafigi</div>
+                        <div style="display:flex;align-items:flex-end;gap:8px;height:70px">
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.15);border-radius:4px 4px 0 0;height:45px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Du</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.2);border-radius:4px 4px 0 0;height:58px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Se</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.3);border-radius:4px 4px 0 0;height:40px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Ch</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.4);border-radius:4px 4px 0 0;height:62px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Pa</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:linear-gradient(135deg,var(--accent),var(--accent-pink));border-radius:4px 4px 0 0;height:70px"></div>
+                                <div style="font-size:0.6rem;color:var(--accent);font-weight:700">Bu</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.1);border-radius:4px 4px 0 0;height:20px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Sh</div>
+                            </div>
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                                <div style="width:100%;background:rgba(133,114,228,0.08);border-radius:4px 4px 0 0;height:10px"></div>
+                                <div style="font-size:0.6rem;color:var(--text-dim)">Ya</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Branches -->
+                    <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+                        <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.08em">Faol filiallar</div>
+                        <div style="display:flex;flex-direction:column">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+                                <div style="font-size:0.82rem;font-weight:600;color:var(--text)">🏪 Markaziy filial</div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:0.72rem;color:var(--text-dim)">8 operator</span>
+                                    <span style="font-size:0.68rem;font-weight:700;background:rgba(5,150,105,0.1);color:#059669;border-radius:50px;padding:2px 9px">● Faol</span>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+                                <div style="font-size:0.82rem;font-weight:600;color:var(--text)">🏪 Shimoliy filial</div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:0.72rem;color:var(--text-dim)">3 operator</span>
+                                    <span style="font-size:0.68rem;font-weight:700;background:rgba(5,150,105,0.1);color:#059669;border-radius:50px;padding:2px 9px">● Faol</span>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px">
+                                <div style="font-size:0.82rem;font-weight:600;color:var(--text)">🏪 Janubiy filial</div>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:0.72rem;color:var(--text-dim)">1 operator</span>
+                                    <span style="font-size:0.68rem;font-weight:700;background:rgba(217,119,6,0.1);color:#d97706;border-radius:50px;padding:2px 9px">◐ Tanaffus</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:0.82rem;color:var(--text-dim);margin-top:1.25rem">Barcha filiallarni bir dashboarddan boshqaring · Real vaqt statistika</p>
+    </div>
+
+    <!-- ── AUTH TAB ── -->
+    <div id="pane-auth" style="display:none;max-width:440px;margin:0 auto">
+        <div style="border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.16);border:1px solid var(--border)">
+            <!-- Toggle login/register -->
+            <div style="background:#f0eefe;border-bottom:1px solid var(--border);padding:6px 8px;display:flex;gap:4px">
+                <div id="auth-tab-login" onclick="switchAuth('login')"
+                     style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),#6B54CC);color:#fff;transition:all 0.2s">
+                    Tizimga kirish
+                </div>
+                <div id="auth-tab-reg" onclick="switchAuth('register')"
+                     style="flex:1;text-align:center;padding:8px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--text-dim);transition:all 0.2s">
+                    Ro'yxatdan o'tish
+                </div>
+            </div>
+
+            <!-- Login form -->
+            <div id="auth-login" style="padding:28px 24px;background:#fff">
+                <div style="text-align:center;margin-bottom:22px">
+                    <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent-pink));border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    </div>
+                    <div style="font-size:1.15rem;font-weight:800;color:var(--text);letter-spacing:-0.02em">Xush kelibsiz</div>
+                    <div style="font-size:0.82rem;color:var(--text-dim);margin-top:3px">Hisobingizga kiring</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                    <div>
+                        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:5px">Telefon raqam</div>
+                        <div style="background:#F8F9FA;border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;font-size:0.88rem;color:var(--text-dim);font-family:var(--mono)">+998 90 123 45 67</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);margin-bottom:5px">Parol</div>
+                        <div style="background:#F8F9FA;border:1.5px solid var(--accent);border-radius:9px;padding:11px 14px;font-size:0.88rem;color:var(--text);display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 0 3px rgba(133,114,228,0.12)">
+                            <span>••••••••</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                    </div>
+                    <button id="auth-login-btn" onclick="animateLogin()"
+                            style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#6B54CC);color:#fff;border:none;border-radius:9px;font-family:var(--font);font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(133,114,228,0.35);transition:all 0.2s;margin-top:4px">
+                        Kirish
+                    </button>
+                </div>
+                <!-- Success flash -->
+                <div id="auth-success" style="display:none;margin-top:14px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.25);border-radius:9px;padding:11px 14px;text-align:center;font-size:0.84rem;font-weight:600;color:#059669">
+                    ✓ Muvaffaqiyatli kirdingiz! Dashboard yuklanmoqda…
+                </div>
+            </div>
+
+            <!-- Register form (hidden by default) -->
+            <div id="auth-register" style="display:none;padding:28px 24px;background:#fff">
+                <div style="text-align:center;margin-bottom:22px">
+                    <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--accent-pink),var(--accent));border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    </div>
+                    <div style="font-size:1.15rem;font-weight:800;color:var(--text);letter-spacing:-0.02em">Biznesingizni qo'shing</div>
+                    <div style="font-size:0.82rem;color:var(--text-dim);margin-top:3px">2 daqiqada tizimni ishga tushiring</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="background:#F8F9FA;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:0.85rem;color:var(--text-dim)">Ism Familiya</div>
+                    <div style="background:#F8F9FA;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:0.85rem;font-family:var(--mono);color:var(--text-dim)">+998 __ ___ __ __</div>
+                    <div style="background:#F8F9FA;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:0.85rem;color:var(--text-dim)">Biznes nomi</div>
+                    <div style="background:#F8F9FA;border:1.5px solid var(--accent);border-radius:9px;padding:10px 14px;font-size:0.85rem;color:var(--text);box-shadow:0 0 0 3px rgba(133,114,228,0.12)">••••••••</div>
+                    <button style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent-pink),var(--accent));color:#fff;border:none;border-radius:9px;font-family:var(--font);font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(189,81,130,0.3);margin-top:4px">
+                        Bepul ro'yxatdan o'tish →
+                    </button>
+                </div>
+                <div style="margin-top:14px;text-align:center;font-size:0.76rem;color:var(--text-dim)">
+                    Ro'yxatdan o'tish orqali <span style="color:var(--accent);font-weight:600">shartlarga rozilik</span> bildirasiz
+                </div>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:0.82rem;color:var(--text-dim);margin-top:1.25rem">Kredit karta kerak emas · 14 kun bepul sinov</p>
+    </div>
+</div>
+</section>
+
+<style>
+.persp-tab-active {
+    background: linear-gradient(135deg,var(--accent),#6B54CC) !important;
+    color: #fff !important;
+    box-shadow: 0 3px 12px rgba(133,114,228,0.35);
+}
+</style>
+<script>
+function switchTab(name) {
+    ['client','owner','auth'].forEach(function(t){
+        document.getElementById('pane-'+t).style.display = 'none';
+        var btn = document.getElementById('tab-'+t);
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-dim)';
+        btn.style.boxShadow = 'none';
+    });
+    document.getElementById('pane-'+name).style.display = 'block';
+    var active = document.getElementById('tab-'+name);
+    active.style.background = 'linear-gradient(135deg,var(--accent),#6B54CC)';
+    active.style.color = '#fff';
+    active.style.boxShadow = '0 3px 12px rgba(133,114,228,0.35)';
+}
+
+function switchAuth(mode) {
+    if (mode === 'login') {
+        document.getElementById('auth-login').style.display = 'block';
+        document.getElementById('auth-register').style.display = 'none';
+        document.getElementById('auth-tab-login').style.background = 'linear-gradient(135deg,var(--accent),#6B54CC)';
+        document.getElementById('auth-tab-login').style.color = '#fff';
+        document.getElementById('auth-tab-reg').style.background = 'transparent';
+        document.getElementById('auth-tab-reg').style.color = 'var(--text-dim)';
+    } else {
+        document.getElementById('auth-login').style.display = 'none';
+        document.getElementById('auth-register').style.display = 'block';
+        document.getElementById('auth-tab-reg').style.background = 'linear-gradient(135deg,var(--accent),#6B54CC)';
+        document.getElementById('auth-tab-reg').style.color = '#fff';
+        document.getElementById('auth-tab-login').style.background = 'transparent';
+        document.getElementById('auth-tab-login').style.color = 'var(--text-dim)';
+    }
+}
+
+function animateLogin() {
+    var btn = document.getElementById('auth-login-btn');
+    btn.textContent = 'Tekshirilmoqda…';
+    btn.style.opacity = '0.7';
+    setTimeout(function(){
+        btn.style.display = 'none';
+        document.getElementById('auth-success').style.display = 'block';
+        setTimeout(function(){
+            btn.style.display = 'block';
+            btn.textContent = 'Kirish';
+            btn.style.opacity = '1';
+            document.getElementById('auth-success').style.display = 'none';
+        }, 2500);
+    }, 1200);
+}
+
+// Client tab: animate queue position countdown
+(function(){
+    var pos = 5;
+    var stages = [
+        {pos:5, icon:'⏳', color:'rgba(217,119,6,0.1)', border:'rgba(217,119,6,0.3)', posColor:'#d97706'},
+        {pos:3, icon:'⏳', color:'rgba(217,119,6,0.1)', border:'rgba(217,119,6,0.3)', posColor:'#d97706'},
+        {pos:1, icon:'🔔', color:'rgba(133,114,228,0.1)', border:'rgba(133,114,228,0.3)', posColor:'var(--accent)'},
+        {pos:0, icon:'✅', color:'rgba(5,150,105,0.08)', border:'rgba(5,150,105,0.25)', posColor:'#059669'},
+    ];
+    var si = 0;
+    function applyStage(s) {
+        var posEl = document.getElementById('c-pos');
+        var iconEl = document.getElementById('c-icon');
+        var block = document.getElementById('c-waiting-block');
+        var waitEl = document.getElementById('c-wait');
+        if (!posEl) return;
+        posEl.style.transition = 'all 0.4s';
+        iconEl.style.transition = 'all 0.4s';
+        if (s.pos === 0) {
+            block.style.background = s.color;
+            block.style.borderColor = s.border;
+            posEl.textContent = '✓';
+            posEl.style.color = s.posColor;
+            posEl.style.fontSize = '2rem';
+            waitEl.innerHTML = '<strong style="color:#059669">Xizmat yakunlandi!</strong>';
+            iconEl.textContent = s.icon;
+            iconEl.style.background = 'rgba(5,150,105,0.1)';
+            iconEl.style.borderColor = 'rgba(5,150,105,0.3)';
+        } else {
+            block.style.background = s.color;
+            block.style.borderColor = s.border;
+            posEl.textContent = s.pos;
+            posEl.style.color = s.posColor;
+            posEl.style.fontSize = '2.8rem';
+            iconEl.textContent = s.icon;
+            iconEl.style.background = s.color;
+            iconEl.style.borderColor = s.border;
+            var mins = s.pos * 5;
+            waitEl.innerHTML = 'Taxminiy kutish: <strong>~' + mins + ' daqiqa</strong>';
+        }
+    }
+    setInterval(function(){
+        si = (si + 1) % stages.length;
+        applyStage(stages[si]);
+    }, 2500);
+
+    // Owner tab: animate counters
+    setInterval(function(){
+        var t = document.getElementById('o-today');
+        var d = document.getElementById('o-done');
+        var w = document.getElementById('o-wait');
+        if(!t) return;
+        t.textContent = parseInt(t.textContent) + 1;
+        d.textContent = parseInt(d.textContent) + 1;
+        var wv = Math.max(0, parseInt(w.textContent) + (Math.random() > 0.5 ? 1 : -1));
+        w.textContent = wv;
+    }, 2000);
+})();
+</script>
+
 <!-- FEATURES -->
 <section id="features" style="background:var(--bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
     <div class="container">
