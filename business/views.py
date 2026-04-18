@@ -407,6 +407,13 @@ def feedbacks_list(request):
     })
 
 
+@owner_required
+def display_select(request):
+    """Let the owner choose which branch to show on the big screen."""
+    businesses = Business.objects.filter(owner=request.user).prefetch_related('branches')
+    return render(request, 'dashboard/display_select.html', {'businesses': businesses})
+
+
 # ─── Queue management ─────────────────────────────────────────────────────────
 
 @owner_required

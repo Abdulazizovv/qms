@@ -1,9 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Chipta {{ ticket.number }}{% endblock %}
+{% block title %}Chipta {{ ticket.number }} — Tartibly{% endblock %}
 
 {% block extra_css %}
 <style>
-    .ticket-wrap { max-width: 460px; margin: 0 auto; }
+    .ticket-wrap { max-width: 500px; margin: 0 auto; width: 100%; }
+    @media (max-width: 768px) {
+        #ticket-main { padding-bottom: 88px !important; align-items: flex-start; }
+        .ticket-number-big { font-size: 4rem; }
+    }
+    @media (max-width: 400px) {
+        .ticket-number-big { font-size: 3.2rem; }
+    }
 
     .ticket-number-big {
         font-family: var(--mono);
@@ -35,17 +42,35 @@
         50%      { box-shadow: 0 0 0 16px rgba(124,58,237,0); }
     }
 
+    /* Timeline row */
+    .tl { display: flex; flex-direction: column; gap: 6px; margin-top: 0; }
+    .tl-row {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 0.8rem; padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .tl-row:last-child { border-bottom: none; }
+    .tl-key { color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .tl-val { font-weight: 600; color: var(--text); font-family: var(--mono); font-size: 0.78rem; }
+
     /* Star rating */
-    .star-row { display: inline-flex; flex-direction: row-reverse; gap: 6px; }
+    .star-row { display: inline-flex; flex-direction: row-reverse; gap: 4px; }
     .star-row input[type=radio] { display: none; }
     .star-row label {
-        font-size: 2.25rem; color: var(--border-lite);
-        cursor: pointer; transition: color 0.15s, transform 0.1s; user-select: none;
+        font-size: 2.5rem; color: var(--border-lite);
+        cursor: pointer; transition: color 0.12s, transform 0.1s; user-select: none;
     }
     .star-row input:checked ~ label,
     .star-row label:hover,
     .star-row label:hover ~ label { color: #fbbf24; }
     .star-row label:active { transform: scale(1.2); }
+
+    /* Star hint labels */
+    .star-hints {
+        display: flex; justify-content: space-between;
+        font-size: 0.65rem; color: var(--text-muted);
+        margin-top: 2px; padding: 0 2px;
+    }
 
     /* WS live badge */
     .ws-dot {
@@ -58,28 +83,37 @@
         background: var(--text-muted);
     }
     .ws-dot.live span { background: var(--success); box-shadow: 0 0 5px var(--success); }
+
+    /* Celebration confetti on done */
+    @keyframes confetti-pop {
+        0%   { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+        60%  { opacity: 1; transform: scale(1.15) rotate(5deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    .done-celebrate { animation: confetti-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
 </style>
 {% endblock %}
 
 {% block full_page %}
 <main class="main-content" style="
-    display:flex;align-items:center;justify-content:center;
-    min-height:calc(100vh - 60px);padding:2rem 1rem;
-">
+    display:flex;align-items:flex-start;justify-content:center;
+    min-height:calc(100vh - 64px);padding:2rem 1rem 4rem;
+" id="ticket-main">
 <div class="ticket-wrap fade-in">
 
     <!-- Back link -->
-    <a href="{% url 'client:home' %}"
+    <a href="{% url 'client:my_tickets' %}"
        style="display:inline-flex;align-items:center;gap:5px;font-size:0.8rem;color:var(--text-muted);text-decoration:none;margin-bottom:1.5rem">
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        Bosh sahifa
+        Chiptalarim
     </a>
 
+    <!-- Main ticket card -->
     <div class="card" id="ticket-card" style="padding:2.25rem;text-align:center">
 
         <!-- Status icon -->
-        <div class="status-icon {{ ticket.status }}" id="status-icon">
+        <div class="status-icon {{ ticket.status }}{% if is_done %} done-celebrate{% endif %}" id="status-icon">
             {% if is_waiting %}⏳
             {% elif is_process %}🔔
             {% elif is_done %}✅
@@ -87,20 +121,18 @@
             {% else %}✕{% endif %}
         </div>
 
-        <!-- Label -->
         <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.25rem">
             Chipta raqamingiz
         </div>
         <span class="ticket-number-big">{{ ticket.number }}</span>
 
-        <!-- Service info -->
         <div style="font-size:0.825rem;color:var(--text-muted);margin-bottom:1.75rem">
             {{ ticket.service.title }}
             <span style="color:var(--border-lite)">·</span>
             {{ ticket.service.branch.title }}
         </div>
 
-        <!-- Dynamic status block (updated by WS or initial render) -->
+        <!-- Dynamic status block -->
         <div id="live-status">
             {% if is_waiting %}
             <div id="waiting-block" style="
@@ -136,17 +168,31 @@
                 background:var(--success-soft);border:1px solid rgba(16,185,129,0.28);
                 border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;
             ">
-                <div style="font-weight:700;color:var(--success)">✅ Xizmat muvaffaqiyatli yakunlandi!</div>
+                <div style="font-weight:700;color:var(--success);font-size:1.05rem">
+                    ✅ Xizmat muvaffaqiyatli yakunlandi!
+                </div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px">
+                    Tartibly xizmatidan foydalanganingiz uchun rahmat 🙏
+                </div>
             </div>
 
             {% if user.is_authenticated and not has_feedback and ticket.customer == user %}
-            <div class="card" style="text-align:left;margin-top:1rem;border-color:var(--border-lite)">
-                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1rem">
-                    Xizmatni baholang
+            <div style="
+                background:linear-gradient(135deg,rgba(133,114,228,0.06),rgba(189,81,130,0.06));
+                border:1.5px solid rgba(133,114,228,0.2);
+                border-radius:var(--radius);padding:1.5rem;text-align:left;margin-top:0.5rem
+            ">
+                <div style="text-align:center;margin-bottom:1rem">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--purple);margin-bottom:4px">
+                        ★ Xizmatni baholang
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text-muted)">
+                        Sizning fikringiz bizga juda muhim!
+                    </div>
                 </div>
                 <form method="post" action="{% url 'client:ticket_feedback' ticket.pk %}">
                     {% csrf_token %}
-                    <div style="text-align:center;margin-bottom:1.25rem">
+                    <div style="text-align:center;margin-bottom:0.5rem">
                         <div class="star-row">
                             <input type="radio" id="s5" name="rating" value="5" required>
                             <label for="s5" title="5 — A'lo">★</label>
@@ -159,16 +205,29 @@
                             <input type="radio" id="s1" name="rating" value="1">
                             <label for="s1" title="1 — Juda yomon">★</label>
                         </div>
+                        <div class="star-hints">
+                            <span>Juda yomon</span>
+                            <span>A'lo!</span>
+                        </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top:0.75rem">
                         <textarea name="comment" class="form-control" rows="2"
-                                  placeholder="Izoh (ixtiyoriy)…"></textarea>
+                                  placeholder="Izoh (ixtiyoriy)…" style="resize:none"></textarea>
                     </div>
-                    <button class="btn btn-primary btn-block">Yuborish</button>
+                    <button class="btn btn-primary btn-block" style="margin-top:0.75rem">
+                        Fikrni yuborish
+                    </button>
                 </form>
             </div>
             {% elif has_feedback %}
-            <div style="font-size:0.875rem;color:var(--text-muted)">Fikr-mulohazangiz qabul qilindi. Rahmat!</div>
+            <div style="text-align:center;padding:0.75rem;background:var(--success-soft);border:1px solid rgba(16,185,129,0.2);border-radius:var(--r-sm)">
+                <div style="font-size:1.5rem;margin-bottom:4px">
+                    {% for i in "12345" %}{% if forloop.counter <= ticket.feedback.rating %}★{% else %}☆{% endif %}{% endfor %}
+                </div>
+                <div style="font-size:0.8rem;color:var(--success);font-weight:600">
+                    Fikr-mulohazangiz uchun rahmat!
+                </div>
+            </div>
             {% endif %}
 
             {% else %}
@@ -184,7 +243,7 @@
             {% endif %}
         </div><!-- /live-status -->
 
-        <!-- WS connection indicator (only for active statuses) -->
+        <!-- WS connection indicator -->
         {% if is_waiting or is_process %}
         <div class="ws-dot" id="ws-indicator">
             <span></span>
@@ -193,6 +252,70 @@
         {% endif %}
 
     </div><!-- /card -->
+
+    <!-- Detailed ticket info card -->
+    <div class="card fade-in-2" style="margin-top:1rem;padding:1.25rem">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1rem">
+            Chipta tafsilotlari
+        </div>
+        <div class="tl">
+            <div class="tl-row">
+                <span class="tl-key">🎫 Raqam</span>
+                <span class="tl-val">{{ ticket.number }}</span>
+            </div>
+            <div class="tl-row">
+                <span class="tl-key">💼 Xizmat</span>
+                <span class="tl-val" style="font-family:var(--font)">{{ ticket.service.title }}</span>
+            </div>
+            <div class="tl-row">
+                <span class="tl-key">📍 Filial</span>
+                <span class="tl-val" style="font-family:var(--font)">{{ ticket.service.branch.title }}</span>
+            </div>
+            {% if ticket.service.price %}
+            <div class="tl-row">
+                <span class="tl-key">💰 Narx</span>
+                <span class="tl-val">{{ ticket.service.price|floatformat:0 }} so'm</span>
+            </div>
+            {% endif %}
+            <div class="tl-row">
+                <span class="tl-key">⏱ Taxminiy vaqt</span>
+                <span class="tl-val">~{{ ticket.service.estimated_time_minutes }} daqiqa</span>
+            </div>
+            <div class="tl-row">
+                <span class="tl-key">📅 Olindi</span>
+                <span class="tl-val">{{ ticket.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            {% if ticket.called_at %}
+            <div class="tl-row">
+                <span class="tl-key">🔔 Chaqirildi</span>
+                <span class="tl-val">{{ ticket.called_at|date:"H:i" }}</span>
+            </div>
+            {% endif %}
+            {% if ticket.finished_at %}
+            <div class="tl-row">
+                <span class="tl-key">✅ Yakunlandi</span>
+                <span class="tl-val">{{ ticket.finished_at|date:"H:i" }}</span>
+            </div>
+            {% endif %}
+            <div class="tl-row">
+                <span class="tl-key">📊 Holat</span>
+                <span class="tl-val" style="font-family:var(--font)">{{ ticket.get_status_display }}</span>
+            </div>
+            {% if ticket.is_vip %}
+            <div class="tl-row">
+                <span class="tl-key">⭐ VIP</span>
+                <span class="tl-val" style="color:#d97706;font-family:var(--font)">VIP chipta</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not is_waiting and not is_process %}
+    <a href="{% url 'client:home' %}" class="btn btn-secondary btn-block" style="margin-top:1rem">
+        ← Asosiy sahifa
+    </a>
+    {% endif %}
+
 </div><!-- /ticket-wrap -->
 </main>
 {% endblock %}
@@ -201,7 +324,8 @@
 {% if is_waiting or is_process %}
 <script>
 (function() {
-    var TICKET_NUMBER = '{{ ticket.number }}';
+    var TICKET_NUMBER  = '{{ ticket.number }}';
+    var CURRENT_STATUS = '{{ ticket.status }}';   // status already shown on this render
     var wsProtocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
     var wsUrl = wsProtocol + location.host + '/ws/ticket/' + TICKET_NUMBER + '/';
 
@@ -220,17 +344,34 @@
         }
     }
 
+    function playBeep(freq, dur, vol) {
+        if (window.SOUND_MUTED) return;
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq || 880;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(vol || 0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (dur || 0.5));
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + (dur || 0.5));
+        } catch(e) {}
+    }
+
     function applyUpdate(data) {
         var status = data.status;
 
-        // If status changed to something terminal, reload the page
-        if (status === 'done' || status === 'skipped' || status === 'cancel') {
-            location.reload();
-            return;
-        }
+        // No-op if nothing changed (initial connect echo)
+        if (status === CURRENT_STATUS) return;
 
-        if (status === 'process') {
-            location.reload();
+        // Transition to terminal or process → reload to render new UI
+        if (status === 'done' || status === 'skipped' || status === 'cancel' || status === 'process') {
+            if (status === 'process') playBeep(660, 0.3);
+            else if (status === 'done') { playBeep(880, 0.2); setTimeout(function(){ playBeep(1100, 0.3); }, 200); }
+            else playBeep(330, 0.4);
+            setTimeout(function(){ location.reload(); }, 400);
             return;
         }
 
@@ -251,22 +392,18 @@
 
     function connect() {
         ws = new WebSocket(wsUrl);
-
         ws.onopen = function() { setLive(true); reconnectDelay = 2000; };
-
         ws.onmessage = function(e) {
             try {
                 var data = JSON.parse(e.data);
                 if (data.type === 'ticket_status') applyUpdate(data);
             } catch(err) { console.warn('WS parse error', err); }
         };
-
         ws.onclose = function() {
             setLive(false);
             setTimeout(connect, reconnectDelay);
             reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
         };
-
         ws.onerror = function() { setLive(false); };
     }
 

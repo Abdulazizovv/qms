@@ -15,9 +15,14 @@ def send_telegram_message(chat_id: str, text: str):
     from aiogram import Bot
 
     async def _send():
-        bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+        from aiogram.client.default import DefaultBotProperties
+        from aiogram.enums import ParseMode
+        bot = Bot(
+            token=settings.TELEGRAM_BOT_TOKEN,
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        )
         try:
-            await bot.send_message(chat_id=int(chat_id), text=text, parse_mode='HTML')
+            await bot.send_message(chat_id=int(chat_id), text=text)
         finally:
             await bot.session.close()
 
@@ -84,6 +89,98 @@ def notify_ticket_called(ticket_id: int):
     lang = bot_user.language if hasattr(bot_user, 'language') else 'uz'
     from bot.texts import t as tx
     text = tx(lang, 'notify_called',
+              num=ticket.number,
+              svc=ticket.service.title,
+              branch=ticket.service.branch.title)
+    send_telegram_message.delay(bot_user.user_id, text)
+
+
+@shared_task(ignore_result=True)
+def notify_1_remaining(service_id: int):
+    """Notify whoever now has exactly 1 person ahead of them."""
+    from ticket.models import Ticket, StatusTypes
+    from botapp.models import BotUser
+
+    waiting = list(
+        Ticket.objects
+        .filter(service_id=service_id, status=StatusTypes.WAITING)
+        .select_related('customer', 'service__branch')
+        .order_by('-is_vip', 'created_at')
+    )
+
+    # Ticket at index 1 has exactly 1 person ahead
+    if len(waiting) < 2:
+        return
+
+    ticket = waiting[1]
+    if not ticket.customer:
+        return
+
+    bot_user = BotUser.objects.filter(phone_number=ticket.customer.phone).first()
+    if not bot_user:
+        return
+
+    lang = bot_user.language or 'uz'
+    from bot.texts import t as tx
+    text = tx(lang, 'notify_1',
+              num=ticket.number,
+              svc=ticket.service.title,
+              branch=ticket.service.branch.title)
+    send_telegram_message.delay(bot_user.user_id, text)
+
+
+@shared_task(ignore_result=True)
+def notify_ticket_skipped(ticket_id: int):
+    """Notify client when their ticket was skipped by the operator."""
+    from ticket.models import Ticket
+    from botapp.models import BotUser
+
+    try:
+        ticket = Ticket.objects.select_related(
+            'customer', 'service__branch'
+        ).get(pk=ticket_id)
+    except Ticket.DoesNotExist:
+        return
+
+    if not ticket.customer:
+        return
+
+    bot_user = BotUser.objects.filter(phone_number=ticket.customer.phone).first()
+    if not bot_user:
+        return
+
+    lang = bot_user.language or 'uz'
+    from bot.texts import t as tx
+    text = tx(lang, 'notify_skipped',
+              num=ticket.number,
+              svc=ticket.service.title,
+              branch=ticket.service.branch.title)
+    send_telegram_message.delay(bot_user.user_id, text)
+
+
+@shared_task(ignore_result=True)
+def notify_service_done(ticket_id: int):
+    """Notify client that their service is complete and invite feedback."""
+    from ticket.models import Ticket
+    from botapp.models import BotUser
+
+    try:
+        ticket = Ticket.objects.select_related(
+            'customer', 'service__branch'
+        ).get(pk=ticket_id)
+    except Ticket.DoesNotExist:
+        return
+
+    if not ticket.customer:
+        return
+
+    bot_user = BotUser.objects.filter(phone_number=ticket.customer.phone).first()
+    if not bot_user:
+        return
+
+    lang = bot_user.language or 'uz'
+    from bot.texts import t as tx
+    text = tx(lang, 'notify_done',
               num=ticket.number,
               svc=ticket.service.title,
               branch=ticket.service.branch.title)

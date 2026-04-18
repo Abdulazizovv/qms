@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Operator Panel — Tartibli{% endblock %}
+{% block title %}Operator Panel — Tartibly{% endblock %}
 
 {% block sidebar %}
 <aside class="sidebar">
@@ -278,6 +278,9 @@
                 if (data.type === 'queue_update') {
                     renderCurrentCard(data);
                     renderQueue(data);
+                    if (typeof data.done_count !== 'undefined') {
+                        document.getElementById('stat-done').textContent = data.done_count;
+                    }
                 }
             } catch(e) { console.warn('WS parse error', e); }
         };

@@ -42,13 +42,34 @@
         {% endif %}
 
         {% if user.is_authenticated %}
-        <form method="post" action="{% url 'client:ticket_take' service.branch.pk service.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-block btn-lg"
-                    style="font-size:1rem;border-radius:var(--r);padding:15px">
-                🎫 Navbat olish
-            </button>
-        </form>
+            {% if service.queue_type == 'realtime' or service.queue_type == 'both' %}
+            <form method="post" action="{% url 'client:ticket_take' service.branch.pk service.pk %}"
+                  style="margin-bottom:{% if service.vip_price or service.queue_type == 'both' %}0.75rem{% else %}0{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-block btn-lg"
+                        style="font-size:1rem;border-radius:var(--r);padding:15px">
+                    🎫 Navbat olish
+                </button>
+            </form>
+            {% endif %}
+            {% if service.vip_price %}
+            <form method="post" action="{% url 'client:ticket_take_vip' service.branch.pk service.pk %}"
+                  style="margin-bottom:{% if service.queue_type == 'both' %}0.75rem{% else %}0{% endif %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-block btn-lg"
+                        style="font-size:1rem;border-radius:var(--r);padding:15px;
+                               background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;
+                               box-shadow:0 4px 18px rgba(217,119,6,0.35)">
+                    ⭐ VIP navbat olish &nbsp;—&nbsp; {{ service.vip_price|floatformat:0 }} so'm
+                </button>
+            </form>
+            {% endif %}
+            {% if service.queue_type == 'appointment' or service.queue_type == 'both' %}
+            <a href="{% url 'client:service_slots' service.pk %}" class="btn {% if service.queue_type == 'both' %}btn-secondary{% else %}btn-primary{% endif %} btn-block btn-lg"
+               style="font-size:1rem;border-radius:var(--r);padding:15px;display:flex;align-items:center;justify-content:center">
+                📅 Vaqt tanlash
+            </a>
+            {% endif %}
         {% else %}
         <a href="{% url 'auth:login' %}?next={{ request.path }}" class="btn btn-primary btn-block btn-lg"
            style="font-size:1rem;border-radius:var(--r);padding:15px">

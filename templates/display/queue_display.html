@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ branch.title }} — Tartibly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #07070f;
+    --surface:   #0f0f1a;
+    --border:    rgba(255,255,255,0.07);
+    --purple:    #9d8df1;
+    --purple-d:  #7c6ed8;
+    --rose:      #e46aab;
+    --green:     #34d399;
+    --amber:     #fbbf24;
+    --text:      #f0f0f8;
+    --muted:     rgba(240,240,248,0.42);
+    --card-bg:   rgba(255,255,255,0.04);
+    --mono:      'JetBrains Mono', monospace;
+    --font:      'Inter', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────────────── */
+  header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 1rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15,15,26,0.9);
+    backdrop-filter: blur(20px);
+  }
+  .hdr-left { display: flex; align-items: center; gap: 14px; }
+  .hdr-logo {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--purple), var(--rose));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 30px rgba(157,141,241,0.25);
+  }
+  .hdr-brand   { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.04em; }
+  .hdr-branch  { font-size: 0.9rem; color: var(--muted); margin-top: 1px; }
+  .hdr-center  { text-align: center; }
+  .hdr-date    { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .hdr-clock   {
+    font-family: var(--mono);
+    font-size: 3rem; font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--purple), var(--rose));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hdr-right   { display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+  .ws-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 0.78rem; color: var(--muted);
+  }
+  .ws-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .ws-dot.live { background: var(--green); box-shadow: 0 0 10px var(--green); }
+
+  /* ─── BODY ───────────────────────────────────────────────────── */
+  .display-body {
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    overflow: hidden;
+  }
+
+  /* ─── SERVING PANEL ──────────────────────────────────────────── */
+  .serving-panel {
+    padding: 2rem 2.5rem;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border);
+  }
+
+  .serving-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+    flex: 1;
+  }
+
+  .serving-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.5rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+    animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .serving-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--purple), var(--rose));
+    border-radius: 20px 20px 0 0;
+  }
+  .serving-card.vip::before {
+    background: linear-gradient(90deg, var(--amber), #f97316);
+  }
+
+  /* Glowing background */
+  .serving-card::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(157,141,241,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .serving-card.vip::after {
+    background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%);
+  }
+
+  .desk-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .ticket-num {
+    font-family: var(--mono);
+    font-size: 5.5rem; font-weight: 800;
+    line-height: 0.9; letter-spacing: 0.02em;
+    background: linear-gradient(135deg, var(--purple), var(--rose));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .serving-card.vip .ticket-num {
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .vip-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.35);
+    color: var(--amber);
+    border-radius: 50px;
+    font-size: 0.7rem; font-weight: 800;
+    padding: 4px 12px; letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+  .svc-name {
+    font-size: 0.85rem; color: var(--muted);
+    font-weight: 500; margin-top: 0.75rem;
+    overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .live-indicator {
+    position: absolute; bottom: 16px; right: 18px;
+    display: flex; align-items: center; gap: 5px;
+    font-size: 0.65rem; font-weight: 700;
+    color: var(--green); text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .live-indicator span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.4s infinite;
+  }
+
+  .empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex: 1; text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 4rem; margin-bottom: 1.25rem; opacity: 0.2; }
+  .empty-text { font-size: 1.1rem; font-weight: 600; }
+
+  /* ─── WAITING PANEL ──────────────────────────────────────────── */
+  .waiting-panel {
+    padding: 2rem 1.75rem;
+    background: rgba(255,255,255,0.015);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .waiting-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem; flex-shrink: 0;
+  }
+  .count-pill {
+    background: rgba(157,141,241,0.12);
+    border: 1px solid rgba(157,141,241,0.25);
+    color: var(--purple);
+    border-radius: 50px;
+    font-size: 0.75rem; font-weight: 800;
+    padding: 5px 16px;
+  }
+
+  .waiting-scroll { overflow-y: auto; flex: 1; padding-right: 4px; }
+  .waiting-scroll::-webkit-scrollbar { width: 4px; }
+  .waiting-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+  .queue-row {
+    display: flex; align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    transition: background 0.2s;
+    animation: slide-up 0.3s ease;
+  }
+  .queue-row.is-next {
+    background: rgba(157,141,241,0.07);
+    border-color: rgba(157,141,241,0.3);
+  }
+  .queue-row.is-vip {
+    background: rgba(251,191,36,0.05);
+    border-color: rgba(251,191,36,0.2);
+  }
+  .q-pos {
+    width: 32px; flex-shrink: 0;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--muted); text-align: center;
+  }
+  .q-pos.next-arrow { color: var(--purple); font-size: 0.85rem; }
+  .q-number {
+    font-family: var(--mono);
+    font-size: 1.75rem; font-weight: 800;
+    color: var(--text);
+    flex: 1; margin-left: 8px;
+  }
+  .q-vip { font-size: 0.65rem; font-weight: 800; color: var(--amber); margin-left: 4px; vertical-align: middle; }
+  .q-svc {
+    font-size: 0.75rem; color: var(--muted);
+    text-align: right; max-width: 120px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────────────────── */
+  footer {
+    padding: 0.625rem 2.5rem;
+    border-top: 1px solid var(--border);
+    background: rgba(15,15,26,0.9);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem; color: var(--muted);
+  }
+
+  /* ─── ANIMATIONS ─────────────────────────────────────────────── */
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.25; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────────────── */
+  @media (max-width: 860px) {
+    .display-body { grid-template-columns: 1fr; }
+    .serving-panel { border-right: none; border-bottom: 1px solid var(--border); max-height: 55vh; }
+    .hdr-clock { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <div class="hdr-logo">⚡</div>
+    <div>
+      <div class="hdr-brand">Tartibly</div>
+      <div class="hdr-branch">📍 {{ branch.business.title }} · {{ branch.title }}</div>
+    </div>
+  </div>
+
+  <div class="hdr-center">
+    <div class="hdr-date" id="hdr-date">—</div>
+    <div class="hdr-clock" id="clock">--:--:--</div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="ws-chip">
+      <div class="ws-dot" id="ws-dot"></div>
+      <span id="ws-label">Ulanmoqda…</span>
+    </div>
+  </div>
+</header>
+
+<div class="display-body">
+
+  <!-- LEFT: currently served -->
+  <div class="serving-panel" id="serving-panel">
+    <div class="section-title">Hozir xizmatda</div>
+    <div class="serving-grid" id="serving-grid">
+      {% if serving %}
+        {% for item in serving %}
+        <div class="serving-card {% if item.ticket.is_vip %}vip{% endif %}">
+          <div class="desk-label">Stol № {{ item.desk }}</div>
+          <span class="ticket-num">{{ item.ticket.number }}</span>
+          {% if item.ticket.is_vip %}<div class="vip-pill">★ VIP</div>{% endif %}
+          <div class="svc-name">{{ item.service.title }}</div>
+          <div class="live-indicator"><span></span>Xizmatda</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🖥</div>
+          <div class="empty-text">Hozircha faol sessiya yo'q</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RIGHT: waiting queue -->
+  <div class="waiting-panel">
+    <div class="waiting-header">
+      <div class="section-title" style="margin-bottom:0;flex:1">Kutish navbati</div>
+      <div class="count-pill" id="waiting-count">{{ waiting|length }} kishi</div>
+    </div>
+    <div class="waiting-scroll" id="waiting-list">
+      {% if waiting %}
+        {% for ticket in waiting %}
+        <div class="queue-row {% if forloop.first %}is-next{% endif %} {% if ticket.is_vip %}is-vip{% endif %}">
+          <div class="q-pos {% if forloop.first %}next-arrow{% endif %}">
+            {% if forloop.first %}▶{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+          <div class="q-number">
+            {{ ticket.number }}{% if ticket.is_vip %}<span class="q-vip">VIP</span>{% endif %}
+          </div>
+          <div class="q-svc">{{ ticket.service.title }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:3rem 1rem;color:var(--muted)">
+          <div style="font-size:3rem;margin-bottom:1rem;opacity:0.15">🎫</div>
+          <div style="font-size:0.95rem;font-weight:600">Navbatda hech kim yo'q</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Tartibly Queue Management · {{ branch.title }}</span>
+  <span id="last-update">—</span>
+</footer>
+
+<script>
+(function () {
+  var BRANCH_ID  = {{ branch.pk }};
+  var DAYS       = ['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+  var MONTHS     = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+
+  var wsDot   = document.getElementById('ws-dot');
+  var wsLabel = document.getElementById('ws-label');
+  var ws, reconnectDelay = 2000;
+
+  /* ── Clock ─────────────────────────────────────────────── */
+  function tick() {
+    var d = new Date();
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    document.getElementById('clock').textContent =
+      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    document.getElementById('hdr-date').textContent =
+      DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ── WS status ──────────────────────────────────────────── */
+  function setLive(live) {
+    if (live) {
+      wsDot.classList.add('live');
+      wsLabel.textContent = 'Jonli uzatish';
+    } else {
+      wsDot.classList.remove('live');
+      wsLabel.textContent = 'Qayta ulanmoqda…';
+    }
+  }
+
+  /* ── Render serving ─────────────────────────────────────── */
+  function renderServing(list) {
+    var g = document.getElementById('serving-grid');
+    if (!list || !list.length) {
+      g.innerHTML =
+        '<div class="empty-state"><div class="empty-icon">🖥</div>'
+        + '<div class="empty-text">Hozircha faol sessiya yo\'q</div></div>';
+      return;
+    }
+    g.innerHTML = list.map(function(item) {
+      return '<div class="serving-card' + (item.is_vip ? ' vip' : '') + '">'
+        + '<div class="desk-label">Stol № ' + item.desk + '</div>'
+        + '<span class="ticket-num">' + item.ticket_number + '</span>'
+        + (item.is_vip ? '<div class="vip-pill">★ VIP</div>' : '')
+        + '<div class="svc-name">' + item.service + '</div>'
+        + '<div class="live-indicator"><span></span>Xizmatda</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  /* ── Render waiting ─────────────────────────────────────── */
+  function renderWaiting(list, count) {
+    document.getElementById('waiting-count').textContent = (count || 0) + ' kishi';
+    var c = document.getElementById('waiting-list');
+    if (!list || !list.length) {
+      c.innerHTML =
+        '<div style="text-align:center;padding:3rem 1rem;color:var(--muted)">'
+        + '<div style="font-size:3rem;margin-bottom:1rem;opacity:0.15">🎫</div>'
+        + '<div style="font-size:0.95rem;font-weight:600">Navbatda hech kim yo\'q</div></div>';
+      return;
+    }
+    c.innerHTML = list.map(function(t, i) {
+      var isNext = i === 0;
+      var cls = 'queue-row' + (isNext ? ' is-next' : '') + (t.is_vip ? ' is-vip' : '');
+      return '<div class="' + cls + '">'
+        + '<div class="q-pos' + (isNext ? ' next-arrow' : '') + '">'
+        + (isNext ? '▶' : (i + 1)) + '</div>'
+        + '<div class="q-number">' + t.number
+        + (t.is_vip ? '<span class="q-vip">VIP</span>' : '') + '</div>'
+        + '<div class="q-svc">' + t.service + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  /* ── TTS announcement ──────────────────────────────────── */
+  var prevServingNums = {};
+
+  function announce(text) {
+    if (!window.speechSynthesis) return;
+    if (localStorage.getItem('soundMuted') === '1') return;
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'uz-UZ';
+    utt.rate = 0.88;
+    utt.pitch = 1;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utt);
+  }
+
+  function checkNewTickets(list) {
+    if (!list) return;
+    list.forEach(function(item) {
+      if (!prevServingNums[item.ticket_number]) {
+        var desk = item.desk || '';
+        announce(item.ticket_number + ' raqamli chipta ' + desk + ' raqamli operatorga boring');
+      }
+    });
+    prevServingNums = {};
+    list.forEach(function(item) { prevServingNums[item.ticket_number] = true; });
+  }
+
+  /* ── Apply update ───────────────────────────────────────── */
+  function applyUpdate(data) {
+    checkNewTickets(data.serving);
+    renderServing(data.serving);
+    renderWaiting(data.waiting, data.waiting_count);
+    var d = new Date();
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    document.getElementById('last-update').textContent =
+      'Oxirgi yangilanish: ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  /* ── WebSocket ──────────────────────────────────────────── */
+  function connect() {
+    var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    ws = new WebSocket(proto + location.host + '/ws/branch/' + BRANCH_ID + '/');
+    ws.onopen    = function() { setLive(true); reconnectDelay = 2000; };
+    ws.onmessage = function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        if (d.type === 'branch_update') applyUpdate(d);
+      } catch(_) {}
+    };
+    ws.onclose = function() {
+      setLive(false);
+      setTimeout(connect, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 1.5, 12000);
+    };
+    ws.onerror = function() { setLive(false); };
+  }
+
+  // Seed prevServingNums from server-rendered initial state
+  {% for item in serving %}
+  prevServingNums['{{ item.ticket.number }}'] = true;
+  {% endfor %}
+
+  connect();
+})();
+</script>
+</body>
+</html>

@@ -37,4 +37,7 @@ urlpatterns = [
     path('analytics/customers/',     views.customers_list,     name='customers'),
     path('analytics/feedbacks/',     views.feedbacks_list,     name='feedbacks'),
     path('analytics/queue/',         views.queue_management,   name='queue_management'),
+
+    # Big screen display selection
+    path('display/',                 views.display_select,     name='display_select'),
 ]

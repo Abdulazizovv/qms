@@ -36,11 +36,46 @@ def _push_ticket_update(ticket_number: str):
         pass
 
 
+def _push_branch_update(branch_id):
+    """Broadcast queue state to branch big-screen display consumers."""
+    try:
+        from channels.layers import get_channel_layer
+        channel_layer = get_channel_layer()
+        if channel_layer is not None:
+            async_to_sync(channel_layer.group_send)(
+                f'branch_{branch_id}',
+                {'type': 'branch_update'},
+            )
+    except Exception:
+        pass
+
+
+def push_queue_update_for_service(service) -> None:
+    """Push queue update to every active operator session for this service.
+
+    Call this whenever a new ticket enters the queue so operator panels
+    update in real-time without waiting for the next operator action.
+    """
+    from ticket.models import Session, SessionStatus
+    today = timezone.now().date()
+    sessions = Session.objects.filter(
+        service=service,
+        status=SessionStatus.ACTIVE,
+        date=today,
+    )
+    for session in sessions:
+        _push_queue_update(session)
+    try:
+        _push_branch_update(service.branch_id)
+    except Exception:
+        pass
+
+
 # ─── Session management ───────────────────────────────────────────────────────
 
 def close_session(session) -> None:
     """Close session; finish any in-progress ticket first."""
-    from ticket.models import SessionStatus, StatusTypes
+    from ticket.models import SessionStatus
     current = session.get_current_ticket()
     if current:
         finish_ticket(current)
@@ -79,11 +114,17 @@ def get_next_ticket(session):
     # Fire notifications outside the transaction
     _push_queue_update(session)
     _push_ticket_update(ticket.number)
-
-    # Celery: notify the called ticket + check if anyone now has 3 ahead
     try:
+        _push_branch_update(session.service.branch_id)
+    except Exception:
+        pass
+
+    # Celery: notify the called ticket + check if anyone now has 3/1 ahead
+    try:
+        from ticket.tasks import notify_1_remaining
         notify_ticket_called.delay(ticket.id)
         notify_3_remaining.delay(session.service_id)
+        notify_1_remaining.delay(session.service_id)
     except Exception:
         pass
 
@@ -97,6 +138,15 @@ def finish_ticket(ticket) -> None:
     _push_ticket_update(ticket.number)
     if ticket.session:
         _push_queue_update(ticket.session)
+    try:
+        _push_branch_update(ticket.service.branch_id)
+    except Exception:
+        pass
+    try:
+        from ticket.tasks import notify_service_done
+        notify_service_done.delay(ticket.id)
+    except Exception:
+        pass
 
 
 def skip_ticket(ticket) -> None:
@@ -106,6 +156,16 @@ def skip_ticket(ticket) -> None:
     _push_ticket_update(ticket.number)
     if ticket.session:
         _push_queue_update(ticket.session)
+    try:
+        _push_branch_update(ticket.service.branch_id)
+    except Exception:
+        pass
+    try:
+        from ticket.tasks import notify_ticket_skipped, notify_1_remaining
+        notify_ticket_skipped.delay(ticket.id)
+        notify_1_remaining.delay(ticket.service_id)
+    except Exception:
+        pass
 
 
 def cancel_ticket(ticket) -> None:

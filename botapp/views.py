@@ -205,8 +205,57 @@ def ticket_take(request, branch_pk, service_pk):
 
     ticket = Ticket.objects.create(service=service, customer=request.user)
     request.session['last_ticket'] = ticket.number   # remember for nav
+    # Push live update to operator panels and branch display
+    try:
+        from ticket.services import push_queue_update_for_service
+        from ticket.tasks import notify_3_remaining
+        push_queue_update_for_service(service)
+        notify_3_remaining.delay(service.id)
+    except Exception:
+        pass
     messages.success(request, f"Chipta {ticket.number} muvaffaqiyatli olindi!")
-    return redirect('client:my_tickets')
+    return redirect('client:my_ticket', number=ticket.number)
+
+
+# ─── Client: Take a VIP ticket ───────────────────────────────────────────────
+
+@login_required
+def ticket_take_vip(request, branch_pk, service_pk):
+    if request.method != 'POST':
+        return redirect('client:branch_detail', branch_pk=branch_pk)
+
+    branch  = get_object_or_404(Branch,  pk=branch_pk,  is_active=True)
+    service = get_object_or_404(Service, pk=service_pk, branch=branch, status='active')
+
+    if not service.vip_price:
+        messages.error(request, "Bu xizmatda VIP chipta mavjud emas.")
+        return redirect('client:service_detail', service_pk=service_pk)
+
+    existing = Ticket.objects.filter(
+        customer=request.user,
+        service=service,
+        status__in=[StatusTypes.WAITING, StatusTypes.PROCESS],
+        created_at__date=timezone.now().date(),
+    ).first()
+
+    if existing:
+        messages.warning(
+            request,
+            f"Sizda allaqachon {existing.number} raqamli faol chipta bor",
+        )
+        return redirect('client:my_ticket', number=existing.number)
+
+    ticket = Ticket.objects.create(service=service, customer=request.user, is_vip=True)
+    request.session['last_ticket'] = ticket.number
+    try:
+        from ticket.services import push_queue_update_for_service
+        from ticket.tasks import notify_3_remaining
+        push_queue_update_for_service(service)
+        notify_3_remaining.delay(service.id)
+    except Exception:
+        pass
+    messages.success(request, f"⭐ VIP chipta {ticket.number} muvaffaqiyatli olindi!")
+    return redirect('client:my_ticket', number=ticket.number)
 
 
 # ─── Client: Track ticket status ──────────────────────────────────────────────

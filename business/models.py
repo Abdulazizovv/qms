@@ -88,6 +88,7 @@ class Service(BaseModel):
     price                  = models.PositiveBigIntegerField(default=0)
     ticket_prefix          = models.CharField(max_length=5, default='A')
     queue_type             = models.CharField(max_length=15, choices=QueueType, default=QueueType.REALTIME)
+    vip_price              = models.PositiveBigIntegerField(default=0)
 
     def __str__(self):
         return f"{self.branch.title} — {self.title}"

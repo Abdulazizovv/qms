@@ -7,6 +7,7 @@ urlpatterns = [
     path('',                                                views.client_home,           name='home'),
     path('b/<int:branch_pk>/',                              views.branch_detail,         name='branch_detail'),
     path('b/<int:branch_pk>/take/<int:service_pk>/',        views.ticket_take,           name='ticket_take'),
+    path('b/<int:branch_pk>/vip/<int:service_pk>/',         views.ticket_take_vip,       name='ticket_take_vip'),
     path('svc/<int:service_pk>/',                           views.service_detail,        name='service_detail'),
     path('t/<str:number>/',                                 views.my_ticket,             name='my_ticket'),
     path('t/fb/<int:ticket_id>/',                           views.ticket_feedback,       name='ticket_feedback'),

@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QueuePro — Navbat Boshqaruv Tizimi</title>
+    <title>Tartibly — Navbat Boshqaruv Tizimi</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/Abdulazizovv/fayllar/refs/heads/main/favicon.ico">
+    <link rel="shortcut icon" href="https://raw.githubusercontent.com/Abdulazizovv/fayllar/refs/heads/main/favicon.ico">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -379,17 +381,18 @@
 <!-- NAVBAR -->
 <nav class="navbar">
     <a href="/" class="navbar-brand">
-        <div class="brand-icon">⚡️</div>
-        <span class="brand-name">Queue<span>Pro</span></span>
+        <div class="brand-icon" style="background:none;padding:0;overflow:hidden">
+            <img src="https://raw.githubusercontent.com/Abdulazizovv/fayllar/bbfdc66d8c5cf4ed0edffec3a9f7b34327be2cc0/logo.svg" alt="Tartibly" style="width:36px;height:36px;object-fit:contain">
+        </div>
+        <span class="brand-name">Tartib<span>ly</span></span>
     </a>
     <div class="navbar-actions" style="gap:6px">
-        <a href="#demo" class="btn btn-ghost" style="display:none;font-size:0.82rem" id="nav-demo">▶ Demo</a>
         <a href="#features" class="btn btn-ghost" style="font-size:0.82rem">Imkoniyatlar</a>
         <a href="#pricing" class="btn btn-ghost" style="font-size:0.82rem">Narxlar</a>
+        <a href="{% url 'team' %}" class="btn btn-ghost" style="font-size:0.82rem">Jamoa</a>
         <a href="/auth/login/" class="btn btn-ghost">Kirish</a>
         <a href="/auth/register/" class="btn btn-primary">Ro'yxatdan o'tish</a>
     </div>
-    <script>document.getElementById('nav-demo').style.display='inline-flex';</script>
 </nav>
 
 <!-- HERO -->
@@ -405,7 +408,7 @@
     </h1>
 
     <p>
-        QueuePro yordamida filiallaringizda navbatni raqamli tartibga soling.
+        Tartibly yordamida filiallaringizda navbatni raqamli tartibga soling.
         Operatorlar, xizmatlar va ticketlarni bir joydan kuzating.
     </p>
 
@@ -449,7 +452,7 @@
                 <div class="dot-btn" style="background:#BD5182"></div>
                 <div class="dot-btn" style="background:#E2DEFF"></div>
                 <div class="dot-btn" style="background:#98FFD9"></div>
-                <span style="font-size:0.78rem;color:var(--text-dim);margin-left:8px;font-family:var(--mono)">QueuePro — Dashboard</span>
+                <span style="font-size:0.78rem;color:var(--text-dim);margin-left:8px;font-family:var(--mono)">Tartibly — Dashboard</span>
             </div>
             <div class="mockup-content">
                 <div class="mock-stat">
@@ -503,7 +506,7 @@
 <section id="demo" style="background:#FFFFFF; border-top:1px solid var(--border);">
     <div class="container" style="text-align:center">
         <div class="section-label">Demo</div>
-        <h2 class="section-title" style="margin:0 auto 1rem;max-width:600px">QueuePro qanday ishlashini ko'ring</h2>
+        <h2 class="section-title" style="margin:0 auto 1rem;max-width:600px">Tartibly qanday ishlashini ko'ring</h2>
         <p class="section-desc" style="margin:0 auto 3rem">3 daqiqada tizimni to'liq tushunib oling — hech qanday texnik bilim kerak emas.</p>
 
         <!-- Video wrapper -->
@@ -699,15 +702,17 @@
 <footer>
     <div class="footer-inner">
         <a href="/" class="navbar-brand">
-            <div class="brand-icon" style="width:28px;height:28px;font-size:14px">⚡️</div>
-            <span class="brand-name" style="font-size:0.95rem">Queue<span>Pro</span></span>
+            <div class="brand-icon" style="width:28px;height:28px;background:none;padding:0;overflow:hidden">
+                <img src="https://raw.githubusercontent.com/Abdulazizovv/fayllar/bbfdc66d8c5cf4ed0edffec3a9f7b34327be2cc0/logo.svg" alt="Tartibly" style="width:28px;height:28px;object-fit:contain">
+            </div>
+            <span class="brand-name" style="font-size:0.95rem">Tartib<span>ly</span></span>
         </a>
         <div class="footer-links">
             <a href="#features">Imkoniyatlar</a>
             <a href="#pricing">Narxlar</a>
             <a href="/auth/login/">Kirish</a>
         </div>
-        <div class="footer-copy">© 2025 QueuePro. Barcha huquqlar himoyalangan.</div>
+        <div class="footer-copy">© 2025 Tartibly. Barcha huquqlar himoyalangan.</div>
     </div>
 </footer>
 

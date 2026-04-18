@@ -54,6 +54,11 @@ class QueueConsumer(AsyncWebsocketConsumer):
             'waiting_count':  Ticket.objects.filter(
                 service=session.service, status=StatusTypes.WAITING
             ).count(),
+            'done_count':     Ticket.objects.filter(
+                service=session.service,
+                status=StatusTypes.DONE,
+                created_at__date=session.date,
+            ).count(),
             'current_ticket': {
                 'id':     current.id,
                 'number': current.number,
@@ -67,6 +72,74 @@ class QueueConsumer(AsyncWebsocketConsumer):
                 }
                 for t in waiting_qs
             ],
+        }
+
+
+class BranchConsumer(AsyncWebsocketConsumer):
+    """Branch display screen: shows all currently-served and waiting tickets."""
+
+    async def connect(self):
+        self.branch_id = self.scope['url_route']['kwargs']['branch_id']
+        self.group     = f'branch_{self.branch_id}'
+        await self.channel_layer.group_add(self.group, self.channel_name)
+        await self.accept()
+        await self.send(text_data=json.dumps(await self._build_payload()))
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group, self.channel_name)
+
+    async def receive(self, text_data):
+        pass
+
+    async def branch_update(self, event):
+        await self.send(text_data=json.dumps(await self._build_payload()))
+
+    @database_sync_to_async
+    def _build_payload(self):
+        from ticket.models import Session, SessionStatus, StatusTypes, Ticket
+        from django.utils import timezone
+
+        today = timezone.now().date()
+        sessions = list(
+            Session.objects
+            .filter(service__branch_id=self.branch_id, status=SessionStatus.ACTIVE, date=today)
+            .select_related('service', 'operator')
+        )
+
+        serving = []
+        for s in sessions:
+            current = s.get_current_ticket()
+            if current:
+                serving.append({
+                    'ticket_number': current.number,
+                    'service':       s.service.title,
+                    'desk':          s.operator.desk_number,
+                    'is_vip':        current.is_vip,
+                })
+
+        waiting_qs = list(
+            Ticket.objects
+            .filter(service__branch_id=self.branch_id, status=StatusTypes.WAITING)
+            .select_related('service')
+            .order_by('-is_vip', 'created_at')[:30]
+        )
+        waiting = [
+            {
+                'number':  t.number,
+                'service': t.service.title,
+                'is_vip':  t.is_vip,
+            }
+            for t in waiting_qs
+        ]
+
+        return {
+            'type':          'branch_update',
+            'serving':       serving,
+            'waiting':       waiting,
+            'waiting_count': Ticket.objects.filter(
+                service__branch_id=self.branch_id,
+                status=StatusTypes.WAITING,
+            ).count(),
         }
 
 

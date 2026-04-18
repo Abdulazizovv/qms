@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Jamoa — Tartibly{% endblock %}
+
+{% block extra_css %}
+<style>
+.team-hero {
+    text-align: center;
+    padding: 4rem 1rem 3rem;
+    max-width: 640px;
+    margin: 0 auto;
+}
+.team-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--purple-s);
+    border: 1px solid rgba(133,114,228,0.25);
+    border-radius: 50px;
+    padding: 5px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+}
+.team-hero h1 {
+    font-size: 2.75rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+}
+.team-hero h1 span { color: var(--purple); }
+.team-hero p {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+}
+
+/* ── Team grid ── */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto 3rem;
+    padding: 0 1rem;
+}
+.team-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 2rem 1.75rem;
+    text-align: center;
+    box-shadow: var(--sh);
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.team-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.team-card.pm::before   { background: linear-gradient(90deg,#8572e4,#bd5182); }
+.team-card.back::before { background: linear-gradient(90deg,#059669,#0891b2); }
+.team-card.front::before{ background: linear-gradient(90deg,#f59e0b,#ef4444); }
+.team-card.ai::before   { background: linear-gradient(90deg,#8b5cf6,#ec4899); }
+.team-card:hover {
+    box-shadow: var(--sh-lg);
+    transform: translateY(-4px);
+    border-color: var(--purple);
+}
+
+.team-avatar {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto 1.25rem;
+    position: relative;
+}
+.team-card.pm   .team-avatar { background: linear-gradient(135deg,#8572e4,#bd5182); }
+.team-card.back .team-avatar { background: linear-gradient(135deg,#059669,#0891b2); }
+.team-card.front .team-avatar { background: linear-gradient(135deg,#f59e0b,#ef4444); }
+.team-card.ai   .team-avatar { background: linear-gradient(135deg,#8b5cf6,#ec4899); }
+
+.team-avatar-ring {
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+}
+.team-card.pm   .team-avatar-ring { border-color: rgba(133,114,228,0.3); }
+.team-card.back .team-avatar-ring { border-color: rgba(5,150,105,0.3); }
+.team-card.front .team-avatar-ring { border-color: rgba(245,158,11,0.3); }
+.team-card.ai   .team-avatar-ring { border-color: rgba(139,92,246,0.3); }
+
+.team-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.35rem;
+}
+.team-role {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.team-card.pm   .team-role { color: var(--purple); }
+.team-card.back .team-role { color: #059669; }
+.team-card.front .team-role { color: var(--warning); }
+.team-card.ai   .team-role { color: #8b5cf6; }
+
+.team-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+}
+
+.team-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    justify-content: center;
+}
+.team-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 50px;
+    background: var(--bg-hover);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+}
+
+/* ── Mission section ── */
+.mission-section {
+    background: linear-gradient(135deg, var(--purple-s), var(--rose-s));
+    border: 1px solid rgba(133,114,228,0.18);
+    border-radius: var(--r);
+    padding: 3rem 2.5rem;
+    max-width: 800px;
+    margin: 0 auto 4rem;
+    text-align: center;
+}
+.mission-section h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+}
+.mission-section p {
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.75;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+.stat-item { text-align: center; }
+.stat-num  {
+    font-size: 2rem; font-weight: 900;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--purple), var(--rose));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.stat-lbl { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+@media (max-width: 600px) {
+    .team-hero h1 { font-size: 2rem; }
+    .mission-section { padding: 2rem 1.25rem; }
+    .stats-row { gap: 1.5rem; }
+}
+</style>
+{% endblock %}
+
+{% block full_page %}
+<main class="main-content" style="padding: 0 0 2rem">
+
+    <!-- Hero -->
+    <div class="team-hero fade-in">
+        <div class="team-hero-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Bizning jamoa
+        </div>
+        <h1>
+            <span>Tartibly</span>ni yaratgan<br>odamlar
+        </h1>
+        <p>
+            Zamonaviy navbat boshqaruv tizimini qurishga bag'ishlangan kichik,
+            lekin kuchli jamoa. Har bir a'zo o'z yo'nalishida mutaxassis.
+        </p>
+    </div>
+
+    <!-- Team cards -->
+    <div class="team-grid fade-in-2">
+
+        <!-- Project Manager -->
+        <div class="team-card pm">
+            <div class="team-avatar">
+                👨‍💼
+                <div class="team-avatar-ring"></div>
+            </div>
+            <div class="team-name">Ulug'bek Abdulazizov</div>
+            <div class="team-role">Project Manager</div>
+            <div class="team-desc">
+                Loyihaning umumiy yo'nalishini boshqaradi. Jamoa a'zolari orasida
+                muloqotni ta'minlaydi va muddatlarni nazorat qiladi.
+            </div>
+            <div class="team-tags">
+                <span class="team-tag">Leadership</span>
+                <span class="team-tag">Strategy</span>
+                <span class="team-tag">Planning</span>
+            </div>
+        </div>
+
+        <!-- Backend Developer & Founder -->
+        <div class="team-card back">
+            <div class="team-avatar">
+                👩‍💻
+                <div class="team-avatar-ring"></div>
+            </div>
+            <div class="team-name">Mutalibova Mubinaxon</div>
+            <div class="team-role">Backend Developer &amp; Founder</div>
+            <div class="team-desc">
+                Platforma arxitekturasini loyihaladi va backend qismini to'liq
+                amalga oshirdi. Django, Channels va Celery bo'yicha asosiy muhandis.
+            </div>
+            <div class="team-tags">
+                <span class="team-tag">Django</span>
+                <span class="team-tag">Python</span>
+                <span class="team-tag">WebSocket</span>
+                <span class="team-tag">Celery</span>
+            </div>
+        </div>
+
+        <!-- Frontend Developer -->
+        <div class="team-card front">
+            <div class="team-avatar">
+                👩‍🎨
+                <div class="team-avatar-ring"></div>
+            </div>
+            <div class="team-name">Mahmudova Xadichaxon</div>
+            <div class="team-role">Frontend Developer</div>
+            <div class="team-desc">
+                Foydalanuvchi interfeysini yaratdi. Qulay, chiroyli va
+                responsiv dizaynni amalga oshirishda asosiy rol o'ynadi.
+            </div>
+            <div class="team-tags">
+                <span class="team-tag">HTML/CSS</span>
+                <span class="team-tag">JavaScript</span>
+                <span class="team-tag">UI/UX</span>
+                <span class="team-tag">Responsive</span>
+            </div>
+        </div>
+
+        <!-- AI Assistant -->
+        <div class="team-card ai">
+            <div class="team-avatar">
+                🤖
+                <div class="team-avatar-ring"></div>
+            </div>
+            <div class="team-name">AI Assistant</div>
+            <div class="team-role">UI/UX &amp; Code Assistant</div>
+            <div class="team-desc">
+                Dizayn takliflari, kod yozishda yordam va UX yaxshilash
+                bo'yicha sun'iy intellekt yordamchisi.
+            </div>
+            <div class="team-tags">
+                <span class="team-tag">Claude AI</span>
+                <span class="team-tag">UI/UX</span>
+                <span class="team-tag">Code Review</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Mission -->
+    <div class="mission-section fade-in-3" style="padding: 0 1rem; max-width:unset">
+    <div class="mission-section">
+        <h2>🎯 Bizning maqsad</h2>
+        <p>
+            <strong>Tartibly</strong> — bu O'zbekistondagi bizneslar uchun
+            qulay, real-time navbat boshqaruv tizimi. Mijozlar kutish vaqtini
+            kamaytirish, operatorlar ish samaradorligini oshirish va biznes
+            egalariga to'liq tahlil imkoniyatini berish — bizning asosiy maqsadimiz.
+        </p>
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-num">3+</div>
+                <div class="stat-lbl">Tizim moduli</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">∞</div>
+                <div class="stat-lbl">Real-time WebSocket</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">3</div>
+                <div class="stat-lbl">Til qo'llab-quvvatlash</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">🤖</div>
+                <div class="stat-lbl">Telegram bot</div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>
+{% endblock %}

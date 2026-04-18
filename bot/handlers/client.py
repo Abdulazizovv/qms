@@ -211,6 +211,15 @@ async def take_ticket(call: CallbackQuery):
 
     ticket = await Ticket.objects.acreate(service=svc, customer=web_user)
     pos = ticket.queue_position()
+    # Push live update to operator panels
+    try:
+        from asgiref.sync import sync_to_async
+        from ticket.services import push_queue_update_for_service
+        from ticket.tasks import notify_3_remaining
+        await sync_to_async(push_queue_update_for_service)(svc)
+        notify_3_remaining.delay(svc.id)
+    except Exception:
+        pass
     await call.message.edit_text(
         t(lang, 'ticket_taken',
           num=ticket.number,

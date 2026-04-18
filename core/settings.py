@@ -149,10 +149,11 @@ USE_I18N      = True
 USE_TZ        = True
 
 # ── Static / Media ────────────────────────────────────────────────────────────
-STATIC_URL  = env.str('STATIC_URL', '/static/')
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL   = env.str('MEDIA_URL', '/media/')
-MEDIA_ROOT  = BASE_DIR / 'media'
+STATIC_URL       = env.str('STATIC_URL', '/static/')
+STATIC_ROOT      = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_URL        = env.str('MEDIA_URL', '/media/')
+MEDIA_ROOT       = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -169,4 +170,4 @@ MESSAGE_TAGS = {
 # ── Telegram ──────────────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN    = env.str('TOKEN', '')
 TELEGRAM_WEBHOOK_URL  = env.str('TELEGRAM_WEBHOOK_URL', '')
-TELEGRAM_BOT_USERNAME = env.str('TELEGRAM_BOT_USERNAME', 'tartibli_bot')
+TELEGRAM_BOT_USERNAME = env.str('TELEGRAM_BOT_USERNAME', 'tartibly_bot')
