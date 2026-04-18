@@ -502,55 +502,177 @@
     </div>
 </section>
 
-<!-- DEMO VIDEO -->
+<!-- LIVE DEMO PREVIEW -->
 <section id="demo" style="background:#FFFFFF; border-top:1px solid var(--border);">
     <div class="container" style="text-align:center">
-        <div class="section-label">Demo</div>
+        <div class="section-label">Jonli namoyish</div>
         <h2 class="section-title" style="margin:0 auto 1rem;max-width:600px">Tartibly qanday ishlashini ko'ring</h2>
-        <p class="section-desc" style="margin:0 auto 3rem">3 daqiqada tizimni to'liq tushunib oling — hech qanday texnik bilim kerak emas.</p>
+        <p class="section-desc" style="margin:0 auto 3rem">Real vaqtdagi operator paneli — navbatlar, statistika va WebSocket yangilanishlari.</p>
 
-        <!-- Video wrapper -->
-        <div style="position:relative;max-width:800px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.18);border:1px solid var(--border)">
-            <!-- Aspect ratio wrapper 16:9 -->
-            <div style="position:relative;padding-top:56.25%;background:linear-gradient(135deg,#1a1333,#2d1b69)">
-                <!-- Play overlay (shown when no video URL) -->
-                <div id="video-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;cursor:pointer"
-                     onclick="this.style.display='none';document.getElementById('demo-video').style.display='block'">
-                    <!-- Animated glow rings -->
-                    <div style="position:relative;display:flex;align-items:center;justify-content:center">
-                        <div style="position:absolute;width:120px;height:120px;border-radius:50%;border:2px solid rgba(133,114,228,0.3);animation:ring-pulse 2s ease-in-out infinite"></div>
-                        <div style="position:absolute;width:96px;height:96px;border-radius:50%;border:2px solid rgba(133,114,228,0.5);animation:ring-pulse 2s 0.3s ease-in-out infinite"></div>
-                        <!-- Play button -->
-                        <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent-pink));border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(133,114,228,0.5);transition:transform 0.2s"
-                             onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='none'">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-left:3px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <!-- Animated app mockup -->
+        <div style="max-width:900px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.18);border:1px solid var(--border)">
+
+            <!-- Browser chrome -->
+            <div style="background:#f0eefe;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px">
+                <div style="width:12px;height:12px;border-radius:50%;background:#BD5182;opacity:0.8"></div>
+                <div style="width:12px;height:12px;border-radius:50%;background:#d97706;opacity:0.8"></div>
+                <div style="width:12px;height:12px;border-radius:50%;background:#059669;opacity:0.8"></div>
+                <div style="flex:1;background:#fff;border-radius:6px;padding:5px 12px;font-size:0.74rem;font-family:var(--mono);color:var(--text-dim);margin:0 12px;border:1px solid var(--border);text-align:left">
+                    tartibly.uz/operator/panel/
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#059669;font-weight:700">
+                    <span style="width:7px;height:7px;border-radius:50%;background:#059669;display:inline-block;animation:pulse 2s infinite"></span>
+                    Jonli
+                </div>
+            </div>
+
+            <!-- Dashboard body -->
+            <div style="background:#F8F9FA;padding:20px;display:grid;grid-template-columns:200px 1fr;gap:16px;min-height:420px;text-align:left">
+
+                <!-- Sidebar -->
+                <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 10px">
+                    <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);padding:0 8px;margin-bottom:8px">Menyu</div>
+                    <div style="display:flex;flex-direction:column;gap:2px">
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:rgba(133,114,228,0.1);color:var(--accent);font-size:0.82rem;font-weight:600">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                            Panel
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.82rem">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg>
+                            Chiptalar
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--text-dim);font-size:0.82rem">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                            Filiallar
                         </div>
                     </div>
-                    <div style="text-align:center">
-                        <div style="color:#fff;font-weight:700;font-size:1.05rem;margin-bottom:4px">Demo videoni ko'rish</div>
-                        <div style="color:rgba(255,255,255,0.55);font-size:0.82rem">3 daqiqa · O'zbek tilida</div>
+
+                    <div style="margin-top:20px;padding:10px;background:rgba(5,150,105,0.07);border-radius:8px;border:1px solid rgba(5,150,105,0.2)">
+                        <div style="font-size:0.68rem;color:#059669;font-weight:700;margin-bottom:4px">● Sessiya faol</div>
+                        <div style="font-size:0.75rem;color:var(--text-dim)">Stol № 3</div>
+                        <div style="font-size:0.75rem;color:var(--text-dim)">Pasport xizmati</div>
                     </div>
                 </div>
-                <!-- Actual video (hidden by default — replace src with real video) -->
-                <iframe id="demo-video"
-                    style="position:absolute;inset:0;width:100%;height:100%;border:none;display:none"
-                    src="about:blank"
-                    data-src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                    allow="autoplay; fullscreen"
-                    allowfullscreen>
-                </iframe>
+
+                <!-- Main content -->
+                <div style="display:flex;flex-direction:column;gap:14px">
+
+                    <!-- Stats row -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:0 2px 2px 0"></div>
+                            <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:4px">Kutmoqda</div>
+                            <div id="demo-waiting" style="font-size:1.8rem;font-weight:800;color:var(--text);font-family:var(--mono);letter-spacing:-0.04em">12</div>
+                        </div>
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#059669;border-radius:0 2px 2px 0"></div>
+                            <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:4px">Bajarildi</div>
+                            <div id="demo-done" style="font-size:1.8rem;font-weight:800;color:var(--text);font-family:var(--mono);letter-spacing:-0.04em">47</div>
+                        </div>
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden">
+                            <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#d97706;border-radius:0 2px 2px 0"></div>
+                            <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.06em;margin-bottom:4px">O'rtacha vaqt</div>
+                            <div style="font-size:1.8rem;font-weight:800;color:var(--text);font-family:var(--mono);letter-spacing:-0.04em">4.2<span style="font-size:0.9rem;color:var(--text-dim)">min</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Current ticket + queue -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1">
+
+                        <!-- Current ticket -->
+                        <div style="background:#fff;border-radius:var(--radius);border:2px solid var(--accent);padding:18px;text-align:center">
+                            <div style="font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:8px">Joriy chipta</div>
+                            <div id="demo-current" style="font-size:3.5rem;font-weight:900;letter-spacing:-0.04em;font-family:var(--mono);background:linear-gradient(135deg,var(--accent),var(--accent-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">A014</div>
+                            <div style="font-size:0.78rem;color:var(--text-dim);margin-top:6px">Pasport xizmati</div>
+                            <div style="margin-top:14px;display:flex;gap:8px">
+                                <div style="flex:1;padding:7px;border-radius:7px;background:rgba(5,150,105,0.1);border:1px solid rgba(5,150,105,0.25);font-size:0.72rem;font-weight:700;color:#059669;cursor:pointer">✓ Bajarildi</div>
+                                <div style="flex:1;padding:7px;border-radius:7px;background:rgba(189,81,130,0.08);border:1px solid rgba(189,81,130,0.2);font-size:0.72rem;font-weight:700;color:var(--accent-pink);cursor:pointer">↷ O'tkazish</div>
+                            </div>
+                        </div>
+
+                        <!-- Waiting queue -->
+                        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+                            <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:0.72rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;display:flex;justify-content:space-between;align-items:center">
+                                Navbat
+                                <span style="background:rgba(133,114,228,0.1);color:var(--accent);border-radius:50px;padding:2px 10px;font-size:0.68rem" id="demo-qcount">12 kishi</span>
+                            </div>
+                            <div id="demo-queue-list" style="overflow:hidden">
+                                <div class="demo-qrow" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);background:rgba(133,114,228,0.04)">
+                                    <span style="font-family:var(--mono);font-weight:800;font-size:0.95rem;color:var(--accent)">A015</span>
+                                    <span style="font-size:0.78rem;color:var(--text-dim);flex:1">Pasport xizmati</span>
+                                    <span style="font-size:0.65rem;font-weight:700;background:rgba(217,119,6,0.1);color:#d97706;border-radius:50px;padding:2px 8px">Keyingi</span>
+                                </div>
+                                <div class="demo-qrow" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
+                                    <span style="font-family:var(--mono);font-weight:800;font-size:0.95rem;color:var(--text)">A016</span>
+                                    <span style="font-size:0.78rem;color:var(--text-dim);flex:1">Ma'lumotnoma</span>
+                                    <span style="font-size:0.65rem;font-weight:700;background:rgba(133,114,228,0.1);color:var(--accent);border-radius:50px;padding:2px 8px">Kutmoqda</span>
+                                </div>
+                                <div class="demo-qrow" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
+                                    <span style="font-family:var(--mono);font-weight:800;font-size:0.95rem;color:var(--text)">B001</span>
+                                    <span style="font-size:0.78rem;color:var(--text-dim);flex:1">Konsultatsiya</span>
+                                    <span style="font-size:0.65rem;font-weight:700;background:rgba(133,114,228,0.1);color:var(--accent);border-radius:50px;padding:2px 8px">Kutmoqda</span>
+                                </div>
+                                <div class="demo-qrow" style="display:flex;align-items:center;gap:10px;padding:9px 14px">
+                                    <span style="font-family:var(--mono);font-weight:800;font-size:0.95rem;color:#d97706">A017</span>
+                                    <span style="font-size:0.78rem;color:var(--text-dim);flex:1">Pasport xizmati</span>
+                                    <span style="font-size:0.65rem;font-weight:700;background:rgba(251,191,36,0.15);color:#d97706;border-radius:50px;padding:2px 8px">★ VIP</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom status bar -->
+            <div style="background:#fff;border-top:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;color:var(--text-dim)">
+                <span>Tartibly Operator Panel · Stol № 3</span>
+                <span style="display:flex;align-items:center;gap:5px;color:#059669;font-weight:600">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#059669;animation:pulse 2s infinite;display:inline-block"></span>
+                    WebSocket · Jonli uzatish
+                </span>
             </div>
         </div>
 
-        <!-- Feature pills below video -->
+        <!-- Feature pills -->
         <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:2.5rem">
-            <div class="mint-pill">✓ Bepul boshlash</div>
-            <div class="mint-pill">✓ O'rnatish shart emas</div>
-            <div class="mint-pill">✓ 2 daqiqada sozlash</div>
-            <div class="mint-pill">✓ Telegram bot bilan</div>
+            <div class="mint-pill">✓ Real-time WebSocket</div>
+            <div class="mint-pill">✓ VIP navbat</div>
+            <div class="mint-pill">✓ Telegram bildirishnoma</div>
+            <div class="mint-pill">✓ Ko'p filial</div>
         </div>
     </div>
 </section>
+
+<style>
+.demo-qrow { transition: background 0.3s; }
+</style>
+<script>
+(function(){
+    var tickets = ['A014','A015','A016','A017','A018','A019','A020','B001','B002'];
+    var idx = 0;
+    var waiting = 12, done = 47;
+    setInterval(function(){
+        idx = (idx + 1) % tickets.length;
+        var cur = document.getElementById('demo-current');
+        var w   = document.getElementById('demo-waiting');
+        var d   = document.getElementById('demo-done');
+        var qc  = document.getElementById('demo-qcount');
+        if(!cur) return;
+        // animate current ticket change
+        cur.style.transition = 'opacity 0.25s';
+        cur.style.opacity = '0';
+        setTimeout(function(){
+            cur.textContent = tickets[idx];
+            cur.style.opacity = '1';
+            if(waiting > 1) waiting--;
+            done++;
+            w.textContent = waiting;
+            d.textContent = done;
+            qc.textContent = waiting + ' kishi';
+        }, 250);
+    }, 3000);
+})();
+</script>
 
 <!-- FEATURES -->
 <section id="features" style="background:var(--bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
