@@ -1,96 +1,120 @@
 {% extends "base.html" %}
-{% block title %}Barcha xizmatlar{% endblock %}
+{% block title %}Asosiy — Tartibli{% endblock %}
+
+{% block extra_css %}
+<style>
+.biz-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 1.25rem;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+    box-shadow: var(--sh);
+}
+.biz-card:hover {
+    box-shadow: var(--sh-lg);
+    border-color: var(--purple);
+    transform: translateY(-2px);
+}
+.branch-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    transition: all 0.16s;
+    margin-bottom: 6px;
+}
+.branch-item:last-child { margin-bottom: 0; }
+.branch-item:hover {
+    border-color: var(--purple);
+    background: var(--purple-s);
+}
+@media (max-width: 600px) {
+    .home-hero { padding: 1.5rem 0 1rem !important; }
+    .home-hero h1 { font-size: 1.6rem !important; }
+    .biz-grid { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}
 
 {% block full_page %}
-<main class="main-content">
+<main class="main-content has-mobile-nav" style="max-width:1100px;margin:0 auto;padding:1.5rem 1rem">
 
     <!-- Hero -->
-    <div class="fade-in" style="text-align:center;padding:3rem 1rem 2rem">
-        <div style="
-            display:inline-flex;align-items:center;justify-content:center;
-            width:64px;height:64px;
-            background:linear-gradient(135deg,var(--accent),var(--accent-2));
-            border-radius:18px;font-size:28px;margin-bottom:1.25rem;
-            box-shadow:0 0 40px rgba(59,130,246,0.3);
-        ">⚡</div>
-        <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.5rem">
-            Onlayn navbat tizimi
+    <div class="fade-in home-hero" style="text-align:center;padding:2rem 1rem 1.5rem">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:18px;font-size:26px;margin-bottom:1rem;box-shadow:0 0 32px rgba(133,114,228,0.28)">⚡</div>
+        <h1 style="font-size:2rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.5rem;color:var(--text)">
+            Tartibli ga xush kelibsiz
         </h1>
-        <p style="color:var(--text-muted);font-size:1rem;max-width:480px;margin:0 auto">
-            Biznesni tanlang, xizmatni belgilang va navbat oling —<br>
+        <p style="color:var(--text-muted);font-size:0.95rem;max-width:440px;margin:0 auto;line-height:1.65">
+            Biznesni tanlang, xizmatni belgilang va navbat oling —
             <strong style="color:var(--text)">navbatda kutmasdan.</strong>
         </p>
     </div>
 
-    <!-- Business grid -->
+    <!-- Search (shown only if there are businesses) -->
     {% if businesses %}
-    <div class="grid grid-3 fade-in-2">
+    <div class="fade-in-2" style="margin-bottom:1.5rem;max-width:480px;margin-left:auto;margin-right:auto">
+        <div style="position:relative">
+            <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="biz-search" type="search" placeholder="Biznes yoki filial qidiring..." class="form-control" style="padding-left:42px;font-size:0.9rem;border-radius:50px;height:46px">
+        </div>
+    </div>
+
+    <!-- Business grid -->
+    <div class="grid biz-grid fade-in-2" id="biz-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
         {% for biz in businesses %}
-        <div class="card" style="display:flex;flex-direction:column;gap:0">
+        <div class="biz-card" data-biz-title="{{ biz.title|lower }}">
 
             <!-- Business header -->
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
                 {% if biz.logo %}
                 <img src="{{ biz.logo.url }}"
-                     style="width:52px;height:52px;border-radius:12px;object-fit:cover;flex-shrink:0">
+                     style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0;box-shadow:var(--sh)">
                 {% else %}
-                <div style="
-                    width:52px;height:52px;flex-shrink:0;
-                    background:linear-gradient(135deg,var(--accent),var(--accent-2));
-                    border-radius:12px;display:flex;align-items:center;justify-content:center;
-                    font-size:24px;
-                ">🏢</div>
+                <div style="width:50px;height:50px;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--sh)">🏢</div>
                 {% endif %}
-                <div>
-                    <div style="font-weight:700;font-size:1rem;color:var(--text);letter-spacing:-0.01em">
-                        {{ biz.title }}
-                    </div>
-                    <div style="font-size:0.775rem;color:var(--text-muted);margin-top:2px">
-                        {{ biz.branches.count }} filial
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:800;font-size:0.97rem;color:var(--text);letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ biz.title }}</div>
+                    <div style="font-size:0.74rem;color:var(--text-muted);margin-top:2px">
+                        <span class="badge badge-purple" style="padding:2px 8px;font-size:0.68rem">{{ biz.branches.count }} filial</span>
                     </div>
                 </div>
             </div>
 
             {% if biz.about %}
-            <p style="font-size:0.825rem;color:var(--text-muted);line-height:1.55;margin-bottom:1rem">
-                {{ biz.about|truncatechars:110 }}
+            <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.55;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+                {{ biz.about }}
             </p>
             {% endif %}
 
             <!-- Branch links -->
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:auto">
+            <div style="margin-top:auto">
                 {% for branch in biz.branches.all %}
                 {% if branch.is_active %}
-                <a href="{% url 'client:branch_detail' branch.pk %}"
-                   style="
-                       display:flex;align-items:center;justify-content:space-between;
-                       padding:10px 14px;
-                       background:var(--bg-hover);
-                       border:1px solid var(--border);
-                       border-radius:var(--radius-sm);
-                       text-decoration:none;
-                       transition:all 0.15s;
-                   "
-                   onmouseover="this.style.borderColor='var(--accent)'"
-                   onmouseout="this.style.borderColor='var(--border)'">
+                <a href="{% url 'client:branch_detail' branch.pk %}" class="branch-item">
                     <div style="display:flex;align-items:center;gap:8px">
-                        <span style="font-size:0.875rem;color:var(--text);font-weight:500">
-                            🏪 {{ branch.title }}
-                        </span>
+                        <div style="width:30px;height:30px;background:var(--purple-s);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">🏪</div>
+                        <span style="font-size:0.875rem;color:var(--text);font-weight:600">{{ branch.title }}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:8px">
-                        <span style="font-size:0.72rem;color:var(--text-muted)">{{ branch.location }}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                             fill="none" stroke="var(--text-muted)" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                        {% if branch.location %}
+                        <span style="font-size:0.7rem;color:var(--text-muted);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ branch.location }}</span>
+                        {% endif %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                 </a>
                 {% endif %}
                 {% empty %}
-                <div style="font-size:0.825rem;color:var(--text-muted);padding:0.5rem 0">
-                    Hali filial qo'shilmagan
-                </div>
+                <div style="font-size:0.82rem;color:var(--text-muted);padding:0.5rem 0;text-align:center">Hali filial qo'shilmagan</div>
                 {% endfor %}
             </div>
         </div>
@@ -99,12 +123,26 @@
 
     {% else %}
     <!-- Empty state -->
-    <div class="card text-center fade-in-2" style="padding:5rem 2rem;max-width:480px;margin:0 auto">
-        <div style="font-size:4rem;margin-bottom:1rem;opacity:0.4">🏢</div>
-        <h2 style="font-weight:700;font-size:1.25rem;margin-bottom:0.5rem">Bizneslar hali yo'q</h2>
-        <p class="text-muted">Tizimga hali hech qanday biznes qo'shilmagan.</p>
+    <div class="card text-center fade-in-2" style="padding:5rem 2rem;max-width:420px;margin:0 auto">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--purple-s),var(--rose-s));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 1.25rem;border:1px solid var(--border)">🏢</div>
+        <h2 style="font-weight:800;font-size:1.2rem;margin-bottom:0.5rem">Bizneslar hali yo'q</h2>
+        <p class="text-muted" style="font-size:0.875rem;line-height:1.6">Tizimga hali hech qanday biznes qo'shilmagan. Ertaga qayta kirip ko'ring.</p>
     </div>
     {% endif %}
 
 </main>
+
+<script>
+var searchInput = document.getElementById('biz-search');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        var q = this.value.toLowerCase().trim();
+        document.querySelectorAll('#biz-grid [data-biz-title]').forEach(function(card) {
+            var title = card.dataset.bizTitle || '';
+            var branchTitles = Array.from(card.querySelectorAll('.branch-item span')).map(function(s){ return s.textContent.toLowerCase(); }).join(' ');
+            card.style.display = (!q || title.includes(q) || branchTitles.includes(q)) ? '' : 'none';
+        });
+    });
+}
+</script>
 {% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Navbat boshqaruvi — Tartibli{% endblock %}
+
+{% block sidebar %}
+{% include "dashboard/_sidebar.html" with active="queue" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex-between fade-in mb-2" style="flex-wrap:wrap;gap:1rem">
+    <div class="page-header" style="margin-bottom:0">
+        <h1>Navbat boshqaruvi</h1>
+        <p>Bugungi {{ today|date:"d.m.Y" }} — faol sessiyalar va kutayotgan chiptalar</p>
+    </div>
+    <button onclick="location.reload()" class="btn btn-secondary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Yangilash
+    </button>
+</div>
+
+<!-- Filter -->
+{% if businesses.count > 1 %}
+<div class="card fade-in-2" style="margin-bottom:1.25rem;padding:0.875rem 1.25rem">
+    <form method="GET" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+            <label class="form-label">Biznes</label>
+            <select name="business" class="form-control" onchange="this.form.submit()">
+                <option value="">Barchasi</option>
+                {% for biz in businesses %}
+                <option value="{{ biz.pk }}" {% if filters.business == biz.pk|stringformat:"s" %}selected{% endif %}>{{ biz.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if filters.business %}
+        <a href="{% url 'business:queue_management' %}" class="btn btn-ghost btn-sm" style="align-self:flex-end">✕ Barchasi</a>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="grid fade-in-2" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.75rem">
+    <div class="stat-card" style="--accent:#10b981">
+        <div class="stat-value">{{ active_sessions.count }}</div>
+        <div class="stat-label">Faol sessiya</div>
+    </div>
+    <div class="stat-card" style="--accent:#f59e0b">
+        <div class="stat-value">{{ total_waiting }}</div>
+        <div class="stat-label">Kutayotgan</div>
+    </div>
+</div>
+
+<!-- Active sessions -->
+<div class="fade-in-2" style="margin-bottom:2rem">
+    <h2 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1rem">Faol sessiyalar</h2>
+    {% if active_sessions %}
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+        {% for s in active_sessions %}
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+                <div>
+                    <div style="font-weight:700;font-size:0.95rem">{{ s.operator.user.first_name|default:"Operator" }}</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted)">Stol {{ s.operator.desk_number }} · {{ s.service.branch.title }}</div>
+                </div>
+                <span class="badge badge-active">Faol</span>
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:12px">
+                <span style="background:var(--purple-s);color:var(--purple);padding:3px 10px;border-radius:50px;font-weight:600">{{ s.service.title }}</span>
+            </div>
+            <div style="display:flex;gap:1rem">
+                <div style="text-align:center">
+                    <div style="font-family:var(--mono);font-weight:700;font-size:1.2rem;color:var(--warning)">{{ s.waiting_count }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Kutmoqda</div>
+                </div>
+                <div style="text-align:center">
+                    <div style="font-family:var(--mono);font-weight:700;font-size:1.2rem;color:var(--success)">{{ s.done_count }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Bajarildi</div>
+                </div>
+                <div style="text-align:center;margin-left:auto">
+                    <div style="font-size:0.73rem;color:var(--text-muted)">Boshlangan</div>
+                    <div style="font-family:var(--mono);font-size:0.82rem;font-weight:600">{{ s.started_at|date:"H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:2rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">🔇</div>
+        <p class="text-muted">Bugun hali faol sessiya yo'q</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Waiting tickets -->
+<div class="fade-in-3">
+    <h2 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1rem">Kutayotgan chiptalar ({{ total_waiting }})</h2>
+    {% if waiting_tickets %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Chipta</th>
+                    <th>Mijoz</th>
+                    <th>Xizmat</th>
+                    <th>Filial</th>
+                    <th>Navbat o'rni</th>
+                    <th>Kutish (daq)</th>
+                    <th>Qo'shilgan vaqt</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in waiting_tickets %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-family:var(--mono);font-weight:700;font-size:0.95rem;color:var(--purple)">{{ t.number }}</span>
+                            {% if t.is_vip %}<span class="badge badge-rose" style="font-size:0.65rem">VIP</span>{% endif %}
+                        </div>
+                    </td>
+                    <td>{{ t.customer.first_name|default:"Mehmon" }}</td>
+                    <td>{{ t.service.title }}</td>
+                    <td style="color:var(--text-muted);font-size:0.85rem">{{ t.service.branch.title }}</td>
+                    <td><span class="badge badge-waiting">{{ t.queue_position }} ci</span></td>
+                    <td style="font-family:var(--mono);font-size:0.85rem;color:var(--text-muted)">~{{ t.estimated_wait_minutes }}</td>
+                    <td style="font-size:0.8rem;color:var(--text-muted);font-family:var(--mono)">{{ t.created_at|date:"H:i" }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'business:queue_management' %}" onsubmit="return confirm('Chiptani bekor qilasizmi?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="cancel_ticket">
+                            <input type="hidden" name="ticket_pk" value="{{ t.pk }}">
+                            {% if filters.business %}<input type="hidden" name="business" value="{{ filters.business }}">{% endif %}
+                            <button type="submit" class="btn btn-sm" style="padding:4px 10px;font-size:0.73rem;background:rgba(220,38,38,0.08);color:var(--danger);border:1px solid rgba(220,38,38,0.2)">Bekor</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:2rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">✅</div>
+        <p class="text-muted">Hozircha hech kim kutmayapti</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto refresh every 30s
+setTimeout(function(){ location.reload(); }, 30000);
+</script>
+{% endblock %}

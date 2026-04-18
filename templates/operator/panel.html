@@ -1,15 +1,53 @@
 {% extends "base.html" %}
-{% block title %}Operator Panel{% endblock %}
+{% block title %}Operator Panel — Tartibli{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-label">Operator</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{% url 'operator:panel' %}" class="active">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Panel
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% if session %}
+    <div class="sidebar-section">
+        <div class="sidebar-label">Bugungi sessiya</div>
+        <div style="padding:10px;background:var(--success-s);border:1px solid rgba(5,150,105,0.25);border-radius:var(--r-sm)">
+            <div style="font-size:0.75rem;font-weight:700;color:var(--success)">● Faol</div>
+            <div style="font-size:0.82rem;color:var(--text);font-weight:600;margin-top:3px">{{ session.service.title }}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">{{ session.service.branch.title }}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;font-family:var(--mono)">{{ session.date }}</div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="sidebar-section">
+        <div class="sidebar-label">Hisob</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{% url 'auth:logout' %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Chiqish
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>
+{% endblock %}
 
 {% block content %}
 
 {% if not session %}
 <!-- ──────────────── No active session ──────────────── -->
-<div style="max-width:500px;margin:4rem auto" class="fade-in">
+<div style="max-width:480px;margin:3rem auto" class="fade-in">
     <div class="text-center" style="margin-bottom:2rem">
-        <div style="font-size:3rem;margin-bottom:0.75rem">🖥</div>
-        <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:-0.03em">Ish kunini boshlash</h1>
-        <p class="text-muted" style="margin-top:6px">Xizmat turini tanlang va navbat qabulini boshlang</p>
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 1.25rem;box-shadow:0 8px 28px rgba(133,114,228,0.25)">🖥</div>
+        <h1 style="font-size:1.6rem;font-weight:800;letter-spacing:-0.03em">Ish kunini boshlash</h1>
+        <p class="text-muted" style="margin-top:6px;font-size:0.875rem">Xizmat turini tanlang va navbat qabulini boshlang</p>
     </div>
 
     {% if available_services %}
@@ -26,14 +64,15 @@
                 <div class="form-hint">Bugun qaysi xizmatda ishlaysiz?</div>
             </div>
             <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:0.5rem">
-                ▶ Sessiyani boshlash
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Sessiyani boshlash
             </button>
         </form>
     </div>
     {% else %}
     <div class="card text-center" style="padding:2.5rem">
         <div style="font-size:2.5rem;margin-bottom:0.75rem">⚠️</div>
-        <p style="color:var(--warning);font-weight:600;margin-bottom:0.5rem">Xizmat topilmadi</p>
+        <p style="color:var(--warning);font-weight:700;margin-bottom:0.5rem">Xizmat topilmadi</p>
         <p class="text-muted" style="font-size:0.875rem">Sizga hech qanday xizmat tayinlanmagan.<br>Biznes egasiga murojaat qiling.</p>
     </div>
     {% endif %}
@@ -43,19 +82,18 @@
 <!-- ──────────────── Active session ──────────────── -->
 
 <!-- Session status bar -->
-<div id="session-bar" class="flex-between fade-in" style="
+<div class="flex-between fade-in" style="
     background:var(--bg-card);border:1px solid var(--border);
-    border-radius:var(--radius-sm);padding:0.875rem 1.25rem;margin-bottom:1.5rem
+    border-radius:var(--r-sm);padding:0.875rem 1.25rem;margin-bottom:1.5rem;
+    flex-wrap:wrap;gap:10px
 ">
-    <div class="flex-center gap-2">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span class="badge badge-active">● Faol</span>
         <span style="font-weight:700;color:var(--text)">{{ session.service.title }}</span>
-        <span class="text-muted">·</span>
         <span class="text-muted" style="font-size:0.82rem">📍 {{ session.service.branch.title }}</span>
-        <span class="text-muted">·</span>
-        <span class="mono text-muted" style="font-size:0.8rem">{{ session.date }}</span>
+        <span style="font-family:var(--mono);color:var(--text-muted);font-size:0.8rem">{{ session.date }}</span>
     </div>
-    <div class="flex-center gap-2">
+    <div style="display:flex;align-items:center;gap:8px">
         <span id="ws-badge" style="
             font-size:0.72rem;background:var(--bg-hover);border:1px solid var(--border);
             border-radius:50px;padding:4px 12px;color:var(--text-muted)
@@ -63,43 +101,42 @@
         <form method="post" action="{% url 'operator:session_close' session.pk %}"
               onsubmit="return confirm('Ish kunini yakunlamoqchimisiz?')">
             {% csrf_token %}
-            <button class="btn btn-sm"
-                    style="background:var(--danger-soft);color:var(--danger);border:1px solid rgba(239,68,68,0.25)">
-                ✕ Yakunlash
+            <button class="btn btn-sm btn-danger">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Yakunlash
             </button>
         </form>
     </div>
 </div>
 
 <!-- Live panel -->
-<div class="grid" style="grid-template-columns:1fr 1.1fr;gap:1.5rem;align-items:start" class="fade-in-2">
+<div class="grid fade-in-2" style="grid-template-columns:1fr 1.15fr;gap:1.25rem;align-items:start">
 
-    <!-- Left: current ticket -->
-    <div>
+    <!-- Left: current ticket + stats -->
+    <div style="display:flex;flex-direction:column;gap:1rem">
         <div class="card" id="current-card" style="text-align:center;padding:2rem 1.5rem">
-            <!-- Filled by JS -->
             <div style="color:var(--text-muted);font-size:0.875rem">Ulanmoqda…</div>
         </div>
 
         <!-- Quick stats -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem">
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
-                <div id="stat-waiting" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--warning)">—</div>
-                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Kutmoqda</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div class="stat-card" style="text-align:center;padding:1rem;--accent:var(--warning)">
+                <div id="stat-waiting" class="stat-value" style="font-size:1.75rem">—</div>
+                <div class="stat-label">Kutmoqda</div>
             </div>
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
-                <div id="stat-serving" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--accent-2)">—</div>
-                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Xizmatda</div>
+            <div class="stat-card" style="text-align:center;padding:1rem">
+                <div id="stat-serving" class="stat-value" style="font-size:1.75rem">—</div>
+                <div class="stat-label">Xizmatda</div>
             </div>
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.875rem;text-align:center">
-                <div id="stat-done" class="mono" style="font-size:1.6rem;font-weight:700;color:var(--success)">{{ stats.done }}</div>
-                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Bajarildi</div>
+            <div class="stat-card" style="text-align:center;padding:1rem;--accent:var(--success)">
+                <div id="stat-done" class="stat-value" style="font-size:1.75rem">{{ stats.done }}</div>
+                <div class="stat-label">Bajarildi</div>
             </div>
         </div>
     </div>
 
     <!-- Right: queue list -->
-    <div class="card" id="queue-list" style="padding:1.25rem">
+    <div class="card" id="queue-card" style="padding:1.25rem">
         <div class="flex-between" style="margin-bottom:1rem">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">
                 Navbat ro'yxati
@@ -115,27 +152,47 @@
     </div>
 
 </div>
+
 {% endif %}
 
 {% endblock %}
 
-{% if session %}
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    #operator-live-grid { grid-template-columns: 1fr !important; }
+    .main-content .grid[style*="grid-template-columns:1fr 1.15fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
+{% if session %}
 <script>
 (function() {
-    var SESSION_ID = {{ session.pk }};
-    var wsProtocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-    var wsUrl = wsProtocol + location.host + '/ws/queue/' + SESSION_ID + '/';
+    var SESSION_ID   = {{ session.pk }};
+    var NEXT_URL     = "{% url 'operator:ticket_call_next' session.pk %}";
+    var CSRF_TOKEN   = "{{ csrf_token }}";
+    var wsProtocol   = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    var wsUrl        = wsProtocol + location.host + '/ws/queue/' + SESSION_ID + '/';
 
     var ws, reconnectDelay = 2000;
     var wsBadge = document.getElementById('ws-badge');
 
+    var INITIAL_DATA = {
+        type: 'queue_update',
+        waiting_count: {{ waiting_count }},
+        current_ticket: {% if current_ticket %}{"id": {{ current_ticket.pk }}, "number": "{{ current_ticket.number }}", "is_vip": {% if current_ticket.is_vip %}true{% else %}false{% endif %}}{% else %}null{% endif %},
+        waiting: [{% for tk in waiting_tickets %}{"number": "{{ tk.number }}", "is_vip": {% if tk.is_vip %}true{% else %}false{% endif %}, "created_at": "{{ tk.created_at|time:'H:i' }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+    };
+
     function setStatus(text, color) {
-        if (wsBadge) {
-            wsBadge.textContent = text;
-            wsBadge.style.color = color;
-            wsBadge.style.borderColor = color + '44';
-        }
+        if (!wsBadge) return;
+        wsBadge.textContent = text;
+        wsBadge.style.color = color || 'var(--text-muted)';
+        wsBadge.style.borderColor = (color || 'var(--border)') + '55';
     }
 
     function renderCurrentCard(data) {
@@ -143,42 +200,39 @@
         if (!card) return;
 
         if (data.current_ticket) {
-            var t = data.current_ticket;
-            card.innerHTML = [
-                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>',
-                '<div style="position:relative;display:inline-block;margin-bottom:0.75rem">',
-                '  <div style="font-family:var(--mono);font-size:5rem;font-weight:800;letter-spacing:0.06em;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">' + t.number + '</div>',
-                t.is_vip ? '<span style="position:absolute;top:-8px;right:-38px;background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:50px;font-size:0.65rem;font-weight:700;padding:2px 8px;letter-spacing:0.05em">VIP</span>' : '',
-                '</div>',
-                '<div style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.5rem">',
-                '  <form method="post" action="/operator/ticket/' + t.id + '/finish/">',
-                '    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
-                '    <button class="btn btn-success btn-lg" title="Xizmat yakunlandi">✓ Yakunlash</button>',
-                '  </form>',
-                '  <form method="post" action="/operator/ticket/' + t.id + '/skip/">',
-                '    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
-                '    <button class="btn btn-lg" style="background:var(--warning-soft);color:var(--warning);border:1px solid rgba(245,158,11,0.3)" title="Mijoz yo\'q">⏭ O\'tkazish</button>',
-                '  </form>',
-                '</div>',
-            ].join('');
+            var tk = data.current_ticket;
+            card.innerHTML =
+                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>'
+                + '<div style="display:inline-flex;align-items:center;justify-content:center;position:relative;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:var(--r);padding:16px 36px;margin-bottom:0.5rem;box-shadow:0 6px 28px rgba(133,114,228,0.35)">'
+                + '<span style="font-family:var(--mono);font-size:4.5rem;font-weight:800;letter-spacing:0.06em;line-height:1;color:#ffffff">' + tk.number + '</span>'
+                + (tk.is_vip ? '<span style="position:absolute;top:-10px;right:-12px;background:rgba(251,191,36,0.25);color:#d97706;border:1px solid rgba(251,191,36,0.5);border-radius:50px;font-size:0.65rem;font-weight:800;padding:3px 9px;letter-spacing:0.05em">VIP</span>' : '')
+                + '</div>'
+                + '<div style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">'
+                + '<form method="post" action="/operator/ticket/' + tk.id + '/finish/" style="margin:0">'
+                + '<input type="hidden" name="csrfmiddlewaretoken" value="' + CSRF_TOKEN + '">'
+                + '<button class="btn btn-success btn-lg">✓ Yakunlash</button>'
+                + '</form>'
+                + '<form method="post" action="/operator/ticket/' + tk.id + '/skip/" style="margin:0">'
+                + '<input type="hidden" name="csrfmiddlewaretoken" value="' + CSRF_TOKEN + '">'
+                + '<button class="btn btn-lg" style="background:var(--warning-s);color:var(--warning);border:1.5px solid rgba(217,119,6,0.35)">⏭ O\'tkazish</button>'
+                + '</form>'
+                + '</div>';
             document.getElementById('stat-serving').textContent = '1';
         } else {
-            card.innerHTML = [
-                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>',
-                '<div style="font-size:4.5rem;color:var(--text-muted);opacity:0.2;margin:1rem 0;font-family:var(--mono)">—</div>',
-                '<div class="text-muted" style="margin-bottom:1.5rem;font-size:0.9rem">' +
-                    (data.waiting_count ? ('<strong style="color:var(--text)">' + data.waiting_count + '</strong> kishi navbatda kutmoqda') : 'Navbatda hech kim yo\'q') +
-                '</div>',
-                '<form method="post" action="{% url 'operator:ticket_call_next' session.pk %}">',
-                '  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">',
-                '  <button class="btn btn-primary btn-lg btn-block"' + (data.waiting_count ? '' : ' disabled') + '>',
-                '    🔔 Keyingisini chaqirish',
-                '  </button>',
-                '</form>',
-            ].join('');
+            var hasWaiting = data.waiting_count > 0;
+            card.innerHTML =
+                '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:1.25rem">Hozir xizmatda</div>'
+                + '<div style="font-size:5rem;color:var(--border-d);margin:1rem 0;font-family:var(--mono)">—</div>'
+                + '<div class="text-muted" style="margin-bottom:1.5rem;font-size:0.9rem">'
+                + (hasWaiting ? '<strong style="color:var(--text)">' + data.waiting_count + '</strong> kishi navbatda kutmoqda' : 'Navbatda hech kim yo\'q')
+                + '</div>'
+                + '<form method="post" action="' + NEXT_URL + '" style="margin:0">'
+                + '<input type="hidden" name="csrfmiddlewaretoken" value="' + CSRF_TOKEN + '">'
+                + '<button class="btn btn-primary btn-lg btn-block"' + (hasWaiting ? '' : ' disabled') + '>'
+                + '🔔 Keyingisini chaqirish</button>'
+                + '</form>';
             document.getElementById('stat-serving').textContent = '0';
         }
-
         document.getElementById('stat-waiting').textContent = data.waiting_count;
     }
 
@@ -188,28 +242,28 @@
         if (!container) return;
 
         if (!data.waiting || data.waiting.length === 0) {
-            container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.3">🎫</div><div style="font-size:0.875rem">Navbatda hech kim yo\'q</div></div>';
+            container.innerHTML =
+                '<div style="text-align:center;padding:3rem 1rem;color:var(--text-muted)">'
+                + '<div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.3">🎫</div>'
+                + '<div style="font-size:0.875rem">Navbatda hech kim yo\'q</div></div>';
             return;
         }
 
         var html = '<div style="display:flex;flex-direction:column;gap:6px">';
-        data.waiting.forEach(function(t, i) {
-            var isFirst = (i === 0);
-            html += [
-                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;',
-                'background:' + (isFirst ? 'var(--accent-soft)' : 'var(--bg-hover)') + ';',
-                'border:1px solid ' + (isFirst ? 'rgba(124,58,237,0.3)' : 'transparent') + ';',
-                'border-radius:var(--radius-sm);">',
-                '  <div style="display:flex;align-items:center;gap:10px">',
-                isFirst
-                    ? '<span style="font-size:0.65rem;color:var(--accent-2);font-weight:700;text-transform:uppercase;letter-spacing:0.08em">KEYINGI</span>'
-                    : '<span style="font-size:0.72rem;color:var(--text-muted);font-weight:600">' + (i + 1) + '</span>',
-                '    <span style="font-family:var(--mono);font-size:1rem;font-weight:700;color:' + (isFirst ? 'var(--accent-2)' : 'var(--text)') + '">' + t.number + '</span>',
-                t.is_vip ? '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;border-radius:50px;padding:2px 7px;font-size:0.65rem;font-weight:700">VIP</span>' : '',
-                '  </div>',
-                '  <span style="font-size:0.72rem;color:var(--text-muted);font-family:var(--mono)">' + t.created_at + '</span>',
-                '</div>',
-            ].join('');
+        data.waiting.forEach(function(tk, i) {
+            var isFirst = i === 0;
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;'
+                + 'background:' + (isFirst ? 'var(--purple-s)' : 'var(--bg-hover)') + ';'
+                + 'border:1.5px solid ' + (isFirst ? 'var(--purple)' : 'var(--border)') + ';'
+                + 'border-radius:var(--r-sm)">'
+                + '<div style="display:flex;align-items:center;gap:10px">'
+                + (isFirst ? '<span style="font-size:0.65rem;color:var(--purple);font-weight:800;text-transform:uppercase;letter-spacing:0.08em">KEYINGI</span>'
+                           : '<span style="font-size:0.72rem;color:var(--text-muted);font-weight:600">' + (i + 1) + '</span>')
+                + '<span style="font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text)">' + tk.number + '</span>'
+                + (tk.is_vip ? '<span style="background:rgba(251,191,36,0.15);color:#d97706;border-radius:50px;padding:2px 7px;font-size:0.65rem;font-weight:700">VIP</span>' : '')
+                + '</div>'
+                + '<span style="font-size:0.72rem;color:var(--text-muted);font-family:var(--mono)">' + tk.created_at + '</span>'
+                + '</div>';
         });
         html += '</div>';
         container.innerHTML = html;
@@ -217,12 +271,7 @@
 
     function connect() {
         ws = new WebSocket(wsUrl);
-
-        ws.onopen = function() {
-            setStatus('⚡ Jonli', 'var(--success)');
-            reconnectDelay = 2000;
-        };
-
+        ws.onopen = function() { setStatus('⚡ Jonli', 'var(--success)'); reconnectDelay = 2000; };
         ws.onmessage = function(event) {
             try {
                 var data = JSON.parse(event.data);
@@ -232,20 +281,19 @@
                 }
             } catch(e) { console.warn('WS parse error', e); }
         };
-
         ws.onclose = function() {
             setStatus('● Ulanish uzildi', 'var(--danger)');
             setTimeout(connect, reconnectDelay);
             reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
         };
-
-        ws.onerror = function() {
-            setStatus('● Xato', 'var(--danger)');
-        };
+        ws.onerror = function() { setStatus('● Xato', 'var(--danger)'); };
     }
 
+    renderCurrentCard(INITIAL_DATA);
+    renderQueue(INITIAL_DATA);
+    document.getElementById('stat-done').textContent = '{{ stats.done|default:0 }}';
     connect();
 })();
 </script>
-{% endblock %}
 {% endif %}
+{% endblock %}

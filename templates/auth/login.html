@@ -1,15 +1,16 @@
 {% extends "auth/base_auth.html" %}
 
-{% block title %}Kirish{% endblock %}
+{% block title %}Kirish — Tartibli{% endblock %}
 
 {% block content %}
-<div class="auth-box-header">
+<div class="auth-card-header">
     <h1>Xush kelibsiz 👋</h1>
     <p>Davom etish uchun hisobingizga kiring</p>
 </div>
 
-<form method="POST" action="{% url 'auth:login' %}">
+<form method="POST" action="{% url 'auth:login' %}" id="loginForm">
     {% csrf_token %}
+    {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
 
     {% if form.non_field_errors %}
     <div class="alert alert-error">{{ form.non_field_errors.0 }}</div>
@@ -25,6 +26,7 @@
                 class="form-control {% if form.phone.errors %}is-error{% endif %}"
                 placeholder="+998 90 123 45 67"
                 value="{{ form.phone.value|default:'' }}"
+                autocomplete="tel"
                 autofocus
             >
         </div>
@@ -34,30 +36,56 @@
     </div>
 
     <div class="form-group">
-        <label class="form-label" style="display:flex;justify-content:space-between;">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
             <span>Parol</span>
-            <a href="#" style="color:var(--accent);font-size:0.78rem;font-weight:600;text-decoration:none;">Unutdingizmi?</a>
+            <a href="#" style="color:var(--purple);font-size:0.78rem;font-weight:600;text-decoration:none">Unutdingizmi?</a>
         </label>
         <div class="input-wrap">
             <span class="input-icon">🔒</span>
             <input
                 type="password"
+                id="passwordField"
                 name="password"
-                class="form-control {% if form.password.errors %}is-error{% endif %}"
+                class="form-control has-toggle {% if form.password.errors %}is-error{% endif %}"
                 placeholder="Parolingizni kiriting"
+                autocomplete="current-password"
             >
+            <button type="button" class="input-toggle" onclick="togglePassword('passwordField', this)" title="Ko'rsatish/yashirish">
+                <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
         </div>
         {% if form.password.errors %}
         <span class="form-error">{{ form.password.errors.0 }}</span>
         {% endif %}
     </div>
 
-    <button type="submit" class="btn">
-        Kirish →
+    <button type="submit" class="btn" id="submitBtn">
+        Kirish
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
 </form>
 
 <div class="auth-link">
     Hisobingiz yo'qmi? <a href="{% url 'auth:register' %}">Ro'yxatdan o'ting</a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(fieldId, btn) {
+    var f = document.getElementById(fieldId);
+    var isHidden = f.type === 'password';
+    f.type = isHidden ? 'text' : 'password';
+    btn.innerHTML = isHidden
+        ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    btn.style.color = isHidden ? 'var(--purple)' : '';
+}
+
+document.getElementById('loginForm').addEventListener('submit', function() {
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Kirilmoqda…';
+});
+</script>
 {% endblock %}

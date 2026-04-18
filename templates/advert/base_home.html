@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueuePro — Navbat Boshqaruv Tizimi</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+        :root {
+            --bg:           #F8F9FA;
+            --bg-card:      #FFFFFF;
+            --bg-hover:     #F0EEF8;
+            --border:       #E2DEFF;
+            --border-lite:  #C8BFFF;
+            --accent:       #8572E4;
+            --accent-2:     #98FFD9;
+            --accent-pink:  #BD5182;
+            --accent-glow:  rgba(133, 114, 228, 0.12);
+            --success:      #98FFD9;
+            --success-text: #0F6E56;
+            --warning:      #BD5182;
+            --danger:       #BD5182;
+            --text:         #2C2150;
+            --text-muted:   #5A4E7A;
+            --text-dim:     #8B7FAA;
+            --font:         'Sora', sans-serif;
+            --mono:         'JetBrains Mono', monospace;
+            --radius:       12px;
+            --radius-sm:    8px;
+            --radius-lg:    20px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-lite); border-radius: 3px; }
+
+        /* ── Navbar ── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(248, 249, 250, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .brand-name { font-size: 1.15rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+        .brand-name span { color: var(--accent); }
+        .navbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font);
+            font-size: 0.875rem; font-weight: 600;
+            cursor: pointer; border: none;
+            text-decoration: none;
+            transition: all 0.2s;
+            letter-spacing: -0.01em;
+        }
+        .btn-ghost { background: transparent; color: var(--text-dim); }
+        .btn-ghost:hover { color: var(--text); background: var(--bg-hover); }
+        .btn-outline { background: transparent; color: var(--accent); border: 1px solid var(--border-lite); }
+        .btn-outline:hover { border-color: var(--accent); background: var(--accent-glow); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #6B54CC);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(133, 114, 228, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(133, 114, 228, 0.45); }
+        .btn-lg { padding: 14px 28px; font-size: 1rem; border-radius: var(--radius); }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 140px 2rem 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+            width: 900px; height: 700px;
+            background: radial-gradient(ellipse at 50% 10%, rgba(133, 114, 228, 0.10) 0%, rgba(152, 255, 217, 0.05) 50%, transparent 75%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(133, 114, 228, 0.10);
+            border: 1px solid rgba(133, 114, 228, 0.25);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.8rem; font-weight: 600; color: var(--accent);
+            letter-spacing: 0.04em; text-transform: uppercase;
+            margin-bottom: 2rem;
+            animation: fadeUp 0.6s ease both;
+        }
+        .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            color: var(--text);
+            max-width: 800px; margin: 0 auto 1.5rem;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-dim);
+            max-width: 560px; margin: 0 auto 2.5rem;
+            line-height: 1.7;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+        .hero-actions {
+            display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+        .hero-stats {
+            margin-top: 4rem;
+            display: flex; align-items: center; justify-content: center; gap: 3rem; flex-wrap: wrap;
+            animation: fadeUp 0.6s 0.4s ease both;
+        }
+        .hero-stat { text-align: center; }
+        .hero-stat .num {
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.04em;
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-stat .label { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+        .hero-divider { width: 1px; height: 40px; background: var(--border); }
+
+        /* ── Mockup ── */
+        .hero-mockup {
+            margin: 4rem auto 0;
+            max-width: 900px;
+            animation: fadeUp 0.8s 0.5s ease both;
+        }
+        .mockup-frame {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(133, 114, 228, 0.12), 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .mockup-topbar {
+            background: rgba(133, 114, 228, 0.04);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dot-btn { width: 12px; height: 12px; border-radius: 50%; }
+        .mockup-content { padding: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .mock-stat {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .mock-stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+        .mock-stat-value { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; }
+        .mock-queue {
+            grid-column: 1 / -1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .mock-queue-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .mock-ticket {
+            display: flex; align-items: center; gap: 16px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .mock-ticket:last-child { border-bottom: none; }
+        .ticket-num { font-family: var(--mono); font-weight: 700; font-size: 1rem; min-width: 50px; }
+        .ticket-info { flex: 1; }
+        .ticket-name { color: var(--text); font-weight: 500; }
+        .ticket-time { color: var(--text-dim); font-size: 0.78rem; }
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 600; }
+        .badge-waiting { background: rgba(189, 81, 130, 0.10); color: var(--accent-pink); }
+        .badge-process  { background: rgba(133, 114, 228, 0.12); color: var(--accent); }
+        .badge-done     { background: rgba(152, 255, 217, 0.25); color: var(--success-text); }
+
+        /* ── Sections ── */
+        section { padding: 100px 2rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .section-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+        .section-title { font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 1rem; color: var(--text); }
+        .section-desc { font-size: 1.05rem; color: var(--text-dim); max-width: 540px; line-height: 1.7; }
+
+        /* ── Features ── */
+        .features-grid {
+            margin-top: 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(133,114,228,0.05), transparent 60%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .feature-card:hover { border-color: var(--border-lite); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(133, 114, 228, 0.12); }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-icon {
+            width: 48px; height: 48px;
+            background: rgba(133, 114, 228, 0.10);
+            border: 1px solid rgba(133, 114, 228, 0.20);
+            border-radius: var(--radius);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.25rem;
+            color: var(--accent);
+        }
+        .feature-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.02em; color: var(--text); }
+        .feature-desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; }
+
+        /* ── How it works ── */
+        .how-grid {
+            margin-top: 4rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        .how-step { padding: 2.5rem 2rem; text-align: center; position: relative; }
+        .how-step:not(:last-child)::after {
+            content: ''; position: absolute; top: 3.8rem; right: 0;
+            width: 1px; height: 36px;
+            background: linear-gradient(to bottom, var(--border), transparent);
+        }
+        .step-num {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: rgba(133, 114, 228, 0.10);
+            border: 1px solid rgba(133, 114, 228, 0.25);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.25rem;
+            font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--accent);
+        }
+        .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+        .step-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+        /* ── Pricing ── */
+        .pricing-grid {
+            margin-top: 4rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; max-width: 900px;
+        }
+        .plan-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .plan-card.featured {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(133,114,228,0.05), #FFFFFF);
+            box-shadow: 0 8px 32px rgba(133, 114, 228, 0.14);
+        }
+        .plan-popular {
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+            color: #fff;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+            padding: 4px 14px; border-radius: 100px;
+        }
+        .plan-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
+        .plan-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 1.75rem; }
+        .plan-price .amount { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text); }
+        .plan-price .period { font-size: 0.85rem; color: var(--text-muted); }
+        .plan-features { list-style: none; flex: 1; margin-bottom: 2rem; }
+        .plan-features li {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 0; font-size: 0.9rem; color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+        .plan-features li:last-child { border-bottom: none; }
+        .plan-features li svg { color: var(--accent); flex-shrink: 0; }
+
+        /* ── CTA ── */
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(133,114,228,0.07), rgba(152,255,217,0.07), rgba(189,81,130,0.04));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 5rem 2rem;
+            margin: 0 2rem;
+            position: relative; overflow: hidden;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 300px;
+            background: radial-gradient(ellipse, rgba(133,114,228,0.08), transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; letter-spacing: -0.04em; margin-bottom: 1rem; color: var(--text); }
+        .cta-section p { color: var(--text-dim); max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+        /* ── Footer ── */
+        footer { border-top: 1px solid var(--border); padding: 3rem 2rem; background: var(--bg-card); }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .footer-links { display: flex; gap: 2rem; }
+        .footer-links a { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--accent); }
+        .footer-copy { font-size: 0.82rem; color: var(--text-muted); }
+
+        /* ── Animations ── */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        @keyframes ring-pulse { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.12); opacity:0.3; } }
+
+        /* ── Mint accent strip ── */
+        .mint-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(152, 255, 217, 0.18);
+            border: 1px solid rgba(152, 255, 217, 0.4);
+            border-radius: 100px;
+            padding: 4px 12px;
+            font-size: 0.75rem; font-weight: 600; color: var(--success-text);
+        }
+
+        @media (max-width: 768px) {
+            .hero { padding: 120px 1.25rem 60px; }
+            .how-step:not(:last-child)::after { display: none; }
+            .hero-divider { display: none; }
+            .mockup-content { grid-template-columns: 1fr 1fr; }
+            .mock-queue { grid-column: 1 / -1; }
+            section { padding: 60px 1.25rem; }
+            .cta-section { margin: 0 1rem; padding: 3rem 1.5rem; }
+            .footer-inner { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="/" class="navbar-brand">
+        <div class="brand-icon">⚡️</div>
+        <span class="brand-name">Queue<span>Pro</span></span>
+    </a>
+    <div class="navbar-actions" style="gap:6px">
+        <a href="#demo" class="btn btn-ghost" style="display:none;font-size:0.82rem" id="nav-demo">▶ Demo</a>
+        <a href="#features" class="btn btn-ghost" style="font-size:0.82rem">Imkoniyatlar</a>
+        <a href="#pricing" class="btn btn-ghost" style="font-size:0.82rem">Narxlar</a>
+        <a href="/auth/login/" class="btn btn-ghost">Kirish</a>
+        <a href="/auth/register/" class="btn btn-primary">Ro'yxatdan o'tish</a>
+    </div>
+    <script>document.getElementById('nav-demo').style.display='inline-flex';</script>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">
+        <span class="dot"></span>
+        Navbat boshqaruvi yangi avlodi
+    </div>
+
+    <h1>
+        Navbatlarni <span class="gradient-text">aqlli</span> boshqaring,<br>
+        mijozlarni xursand qiling
+    </h1>
+
+    <p>
+        QueuePro yordamida filiallaringizda navbatni raqamli tartibga soling.
+        Operatorlar, xizmatlar va ticketlarni bir joydan kuzating.
+    </p>
+
+    <div class="hero-actions">
+        <a href="/auth/register/" class="btn btn-primary btn-lg">
+            <i data-lucide="zap" style="width:18px;height:18px"></i>
+            Bepul boshlang
+        </a>
+        <a href="#features" class="btn btn-outline btn-lg">
+            <i data-lucide="play-circle" style="width:18px;height:18px"></i>
+            Qanday ishlaydi?
+        </a>
+    </div>
+
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="num">500+</div>
+            <div class="label">Faol biznes</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+            <div class="num">50k+</div>
+            <div class="label">Kunlik ticket</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+            <div class="num">99.9%</div>
+            <div class="label">Uptime</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+            <div class="num">3 daqiqa</div>
+            <div class="label">O'rtacha kutish</div>
+        </div>
+    </div>
+
+    <!-- Dashboard mockup preview -->
+    <div class="hero-mockup">
+        <div class="mockup-frame">
+            <div class="mockup-topbar">
+                <div class="dot-btn" style="background:#BD5182"></div>
+                <div class="dot-btn" style="background:#E2DEFF"></div>
+                <div class="dot-btn" style="background:#98FFD9"></div>
+                <span style="font-size:0.78rem;color:var(--text-dim);margin-left:8px;font-family:var(--mono)">QueuePro — Dashboard</span>
+            </div>
+            <div class="mockup-content">
+                <div class="mock-stat">
+                    <div class="mock-stat-label">Bugungi ticketlar</div>
+                    <div class="mock-stat-value" style="color:var(--accent)">142</div>
+                </div>
+                <div class="mock-stat">
+                    <div class="mock-stat-label">Kutayotganlar</div>
+                    <div class="mock-stat-value" style="color:var(--accent-pink)">23</div>
+                </div>
+                <div class="mock-stat">
+                    <div class="mock-stat-label">Bajarildi</div>
+                    <div class="mock-stat-value" style="color:var(--success-text)">119</div>
+                </div>
+                <div class="mock-queue">
+                    <div class="mock-queue-header">
+                        <span>Navbat ro'yxati</span>
+                        <span class="badge badge-process">● Jonli</span>
+                    </div>
+                    <div class="mock-ticket">
+                        <span class="ticket-num" style="color:var(--accent)">A001</span>
+                        <div class="ticket-info">
+                            <div class="ticket-name">Alisher Karimov</div>
+                            <div class="ticket-time">Pasport xizmati · 9:14</div>
+                        </div>
+                        <span class="badge badge-process">Jarayonda</span>
+                    </div>
+                    <div class="mock-ticket">
+                        <span class="ticket-num" style="color:var(--accent-pink)">A002</span>
+                        <div class="ticket-info">
+                            <div class="ticket-name">Malika Yusupova</div>
+                            <div class="ticket-time">Ma'lumotnoma · 9:22</div>
+                        </div>
+                        <span class="badge badge-waiting">Kutmoqda</span>
+                    </div>
+                    <div class="mock-ticket">
+                        <span class="ticket-num" style="color:var(--success-text)">A003</span>
+                        <div class="ticket-info">
+                            <div class="ticket-name">Sardor Toshmatov</div>
+                            <div class="ticket-time">Konsultatsiya · 9:30</div>
+                        </div>
+                        <span class="badge badge-done">Bajarildi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DEMO VIDEO -->
+<section id="demo" style="background:#FFFFFF; border-top:1px solid var(--border);">
+    <div class="container" style="text-align:center">
+        <div class="section-label">Demo</div>
+        <h2 class="section-title" style="margin:0 auto 1rem;max-width:600px">QueuePro qanday ishlashini ko'ring</h2>
+        <p class="section-desc" style="margin:0 auto 3rem">3 daqiqada tizimni to'liq tushunib oling — hech qanday texnik bilim kerak emas.</p>
+
+        <!-- Video wrapper -->
+        <div style="position:relative;max-width:800px;margin:0 auto;border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 24px 64px rgba(133,114,228,0.18);border:1px solid var(--border)">
+            <!-- Aspect ratio wrapper 16:9 -->
+            <div style="position:relative;padding-top:56.25%;background:linear-gradient(135deg,#1a1333,#2d1b69)">
+                <!-- Play overlay (shown when no video URL) -->
+                <div id="video-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;cursor:pointer"
+                     onclick="this.style.display='none';document.getElementById('demo-video').style.display='block'">
+                    <!-- Animated glow rings -->
+                    <div style="position:relative;display:flex;align-items:center;justify-content:center">
+                        <div style="position:absolute;width:120px;height:120px;border-radius:50%;border:2px solid rgba(133,114,228,0.3);animation:ring-pulse 2s ease-in-out infinite"></div>
+                        <div style="position:absolute;width:96px;height:96px;border-radius:50%;border:2px solid rgba(133,114,228,0.5);animation:ring-pulse 2s 0.3s ease-in-out infinite"></div>
+                        <!-- Play button -->
+                        <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--accent-pink));border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(133,114,228,0.5);transition:transform 0.2s"
+                             onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='none'">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff" style="margin-left:3px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="color:#fff;font-weight:700;font-size:1.05rem;margin-bottom:4px">Demo videoni ko'rish</div>
+                        <div style="color:rgba(255,255,255,0.55);font-size:0.82rem">3 daqiqa · O'zbek tilida</div>
+                    </div>
+                </div>
+                <!-- Actual video (hidden by default — replace src with real video) -->
+                <iframe id="demo-video"
+                    style="position:absolute;inset:0;width:100%;height:100%;border:none;display:none"
+                    src="about:blank"
+                    data-src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+                    allow="autoplay; fullscreen"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Feature pills below video -->
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:2.5rem">
+            <div class="mint-pill">✓ Bepul boshlash</div>
+            <div class="mint-pill">✓ O'rnatish shart emas</div>
+            <div class="mint-pill">✓ 2 daqiqada sozlash</div>
+            <div class="mint-pill">✓ Telegram bot bilan</div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="background:var(--bg); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div class="container">
+        <div class="section-label">Imkoniyatlar</div>
+        <h2 class="section-title">Navbat boshqaruvi<br>bu qadar oson emas edi</h2>
+        <p class="section-desc">Biznesni rivojlantirishga e'tibor bering — texnik muammolarni biz hal qilamiz.</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i data-lucide="ticket" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">Aqlli ticket tizimi</div>
+                <div class="feature-desc">Har bir xizmat uchun alohida prefiks va avtomatik raqamlash. Telegram bot orqali ticket olish imkoniyati.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(152,255,217,0.18);border-color:rgba(152,255,217,0.4);color:var(--success-text)">
+                    <i data-lucide="users" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">Operator boshqaruvi</div>
+                <div class="feature-desc">Har bir operatorga xizmatlar biriktiring, sessiyalarni kuzating va ish faoliyatini real vaqtda monitoring qiling.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(189,81,130,0.10);border-color:rgba(189,81,130,0.20);color:var(--accent-pink)">
+                    <i data-lucide="building-2" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">Ko'p filial qo'llab-quvvatlash</div>
+                <div class="feature-desc">Bir dashboard'dan barcha filiallaringizni boshqaring. Har bir filial uchun alohida sozlamalar va jadvallar.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(133,114,228,0.10);border-color:rgba(133,114,228,0.25);color:var(--accent)">
+                    <i data-lucide="bar-chart-3" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">Real vaqt statistika</div>
+                <div class="feature-desc">Kunlik, haftalik va oylik hisobotlar. Kutish vaqti, operator samaradorligi va xizmat tahlili.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(189,81,130,0.10);border-color:rgba(189,81,130,0.20);color:var(--accent-pink)">
+                    <i data-lucide="crown" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">VIP navbat</div>
+                <div class="feature-desc">Muhim mijozlar uchun VIP ticket imkoniyati — ular navbatda ustuvor o'rinni avtomatik egallaydi.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background:rgba(152,255,217,0.18);border-color:rgba(152,255,217,0.4);color:var(--success-text)">
+                    <i data-lucide="bot" style="width:22px;height:22px"></i>
+                </div>
+                <div class="feature-title">Telegram integratsiya</div>
+                <div class="feature-desc">Mijozlar Telegram bot orqali navbat olib, real vaqtda holat haqida xabar olishadi. Hech qanday ilova kerak emas.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--bg);border-bottom:1px solid var(--border)">
+    <div class="container">
+        <div class="section-label" style="text-align:center">Qanday ishlaydi</div>
+        <h2 class="section-title" style="text-align:center;margin:0 auto 0.5rem;max-width:560px">4 qadamda ishga tushiring</h2>
+        <p class="section-desc" style="text-align:center;margin:0 auto">O'rnatish shart emas. Ro'yxatdan o'ting va darhol boshlang.</p>
+
+        <div class="how-grid">
+            <div class="how-step">
+                <div class="step-num">01</div>
+                <div class="step-title">Biznes yarating</div>
+                <div class="step-desc">Kompaniyangiz nomini, logotipini va haqida ma'lumotni kiriting.</div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">02</div>
+                <div class="step-title">Filial qo'shing</div>
+                <div class="step-desc">Manzil, ish vaqti va xizmatlarni sozlang. Bir necha filial bo'lsa ham muammo emas.</div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">03</div>
+                <div class="step-title">Operatorlar ulang</div>
+                <div class="step-desc">Xodimlarga akkaunt bering, ish stoli va xizmatlarini belgilang.</div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">04</div>
+                <div class="step-title">Ticket ishlaydi!</div>
+                <div class="step-desc">Mijozlar Telegram orqali navbat oladi, operatorlar esa dashboard'dan boshqaradi.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:#FFFFFF;">
+    <div class="container">
+        <div class="section-label">Narxlar</div>
+        <h2 class="section-title">Biznesingiz uchun<br>mos tarif tanlang</h2>
+        <p class="section-desc">Barcha tariflar 14 kunlik bepul sinov muddati bilan keladi.</p>
+
+        <div class="pricing-grid">
+            <div class="plan-card">
+                <div class="plan-name">Starter</div>
+                <div class="plan-desc">Kichik biznes uchun ideal</div>
+                <div class="plan-price"><span class="amount">Bepul</span></div>
+                <ul class="plan-features">
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> 1 ta filial</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> 3 ta operator</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> 5 ta xizmat</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Kunlik 100 ticket</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Telegram bot</li>
+                </ul>
+                <a href="/auth/register/" class="btn btn-outline" style="justify-content:center">Bepul boshlash</a>
+            </div>
+
+            <div class="plan-card featured">
+                <div class="plan-popular">Eng mashhur</div>
+                <div class="plan-name">Professional</div>
+                <div class="plan-desc">O'rta va katta biznes uchun</div>
+                <div class="plan-price">
+                    <span class="amount">99 000</span>
+                    <span class="period">so'm/oy</span>
+                </div>
+                <ul class="plan-features">
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Cheksiz filiallar</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Cheksiz operatorlar</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Cheksiz xizmatlar</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Cheksiz ticket</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> VIP navbat</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Kengaytirilgan statistika</li>
+                    <li><i data-lucide="check" style="width:15px;height:15px"></i> Ustuvor qo'llab-quvvatlash</li>
+                </ul>
+                <a href="/auth/register/" class="btn btn-primary" style="justify-content:center">14 kun bepul sinab ko'ring</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:60px 2rem; background:var(--bg);">
+    <div class="cta-section">
+        <h2>Bugundan boshlang,<br>mijozlaringiz minnatdor bo'ladi</h2>
+        <p>Ro'yxatdan o'tish 2 daqiqa oladi. Kredit karta kerak emas.</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+            <a href="/auth/register/" class="btn btn-primary btn-lg">
+                <i data-lucide="arrow-right" style="width:18px;height:18px"></i>
+                Bepul ro'yxatdan o'ting
+            </a>
+            <a href="/auth/login/" class="btn btn-ghost btn-lg" style="color:var(--text-muted)">Hisobga kiring →</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <a href="/" class="navbar-brand">
+            <div class="brand-icon" style="width:28px;height:28px;font-size:14px">⚡️</div>
+            <span class="brand-name" style="font-size:0.95rem">Queue<span>Pro</span></span>
+        </a>
+        <div class="footer-links">
+            <a href="#features">Imkoniyatlar</a>
+            <a href="#pricing">Narxlar</a>
+            <a href="/auth/login/">Kirish</a>
+        </div>
+        <div class="footer-copy">© 2025 QueuePro. Barcha huquqlar himoyalangan.</div>
+    </div>
+</footer>
+
+<script>
+lucide.createIcons();
+document.getElementById('video-overlay').addEventListener('click', function() {
+    var iframe = document.getElementById('demo-video');
+    iframe.src = iframe.dataset.src;
+    iframe.style.display = 'block';
+    this.style.display = 'none';
+});
+</script>
+</body>
+</html>

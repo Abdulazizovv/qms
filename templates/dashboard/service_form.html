@@ -52,6 +52,13 @@
                     {% if form.status.errors %}<span class="form-error">{{ form.status.errors.0 }}</span>{% endif %}
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">Navbat turi</label>
+                    {{ form.queue_type }}
+                    <span class="form-hint">Real-time yoki vaqt sloti asosida</span>
+                    {% if form.queue_type.errors %}<span class="form-error">{{ form.queue_type.errors.0 }}</span>{% endif %}
+                </div>
+
                 <div class="form-group" style="grid-column:1/-1">
                     <label class="form-label">Tavsif</label>
                     {{ form.description }}

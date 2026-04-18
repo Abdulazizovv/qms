@@ -5,6 +5,7 @@ Fires WebSocket notifications (channel layer) and Celery tasks after each change
 from asgiref.sync import async_to_sync
 from django.db import transaction
 from django.utils import timezone
+from ticket.models import StatusTypes
 
 
 def _push_queue_update(session):
@@ -57,7 +58,7 @@ def get_next_ticket(session):
     Fires WebSocket + Celery notification after claiming.
     """
     from ticket.models import StatusTypes, Ticket
-    from ticket.tasks import notify_ticket_called
+    from ticket.tasks import notify_ticket_called, notify_3_remaining
 
     with transaction.atomic():
         ticket = (
@@ -79,9 +80,10 @@ def get_next_ticket(session):
     _push_queue_update(session)
     _push_ticket_update(ticket.number)
 
-    # Celery: send Telegram message to client
+    # Celery: notify the called ticket + check if anyone now has 3 ahead
     try:
         notify_ticket_called.delay(ticket.id)
+        notify_3_remaining.delay(session.service_id)
     except Exception:
         pass
 

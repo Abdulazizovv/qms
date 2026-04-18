@@ -11,6 +11,22 @@ SECRET_KEY    = env.str('SECRET_KEY', 'django-insecure-change-me')
 DEBUG         = env.bool('DEBUG', True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost', '127.0.0.1', '0.0.0.0'])
 
+# Django 4.0+: CSRF checks the Origin header against this list.
+# Must include every scheme+host(:port) the app is reachable from.
+# Example .env:  CSRF_TRUSTED_ORIGINS=https://yourdomain.com,http://localhost:8080
+CSRF_TRUSTED_ORIGINS = env.list(
+    'CSRF_TRUSTED_ORIGINS',
+    ['http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost', 'http://127.0.0.1'],
+)
+
+# Tell Django to trust the X-Forwarded-Host / X-Forwarded-Proto headers set by Nginx.
+USE_X_FORWARDED_HOST  = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Tighten cookies in production (when DEBUG=False)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE    = not DEBUG
+
 # ── Apps ──────────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'daphne',                                  # must be first for channels ASGI
@@ -58,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'common.context_processors.site_settings',
             ],
         },
     },
@@ -115,7 +132,8 @@ CELERY_TASK_ALWAYS_EAGER   = not bool(REDIS_URL)   # run tasks inline if no Redi
 # ── Auth ──────────────────────────────────────────────────────────────────────
 AUTH_USER_MODEL      = 'user.MyUser'
 LOGIN_URL            = '/auth/login/'
-LOGIN_REDIRECT_URL   = '/dashboard/'
+LOGIN_REDIRECT_URL   = '/'        # custom login_view overrides this per role
+LOGOUT_REDIRECT_URL  = '/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -149,5 +167,6 @@ MESSAGE_TAGS = {
 }
 
 # ── Telegram ──────────────────────────────────────────────────────────────────
-TELEGRAM_BOT_TOKEN   = env.str('TOKEN', '')
-TELEGRAM_WEBHOOK_URL = env.str('TELEGRAM_WEBHOOK_URL', '')
+TELEGRAM_BOT_TOKEN    = env.str('TOKEN', '')
+TELEGRAM_WEBHOOK_URL  = env.str('TELEGRAM_WEBHOOK_URL', '')
+TELEGRAM_BOT_USERNAME = env.str('TELEGRAM_BOT_USERNAME', 'tartibli_bot')

@@ -1,5 +1,5 @@
 # %% Core %%
-Django==5.2
+Django>=4.2,<5.2
 asgiref==3.11.1
 sqlparse==0.5.5
 pillow==11.2.1

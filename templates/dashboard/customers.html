@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Mijozlar — Tartibli{% endblock %}
+
+{% block sidebar %}
+{% include "dashboard/_sidebar.html" with active="customers" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex-between fade-in mb-2" style="flex-wrap:wrap;gap:1rem">
+    <div class="page-header" style="margin-bottom:0">
+        <h1>Mijozlar</h1>
+        <p>Xizmatdan foydalangan mijozlar ro'yxati</p>
+    </div>
+</div>
+
+<!-- Stat -->
+<div class="grid fade-in-2" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.75rem">
+    <div class="stat-card">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Jami mijozlar</div>
+    </div>
+</div>
+
+<!-- Search & filter -->
+<div class="card fade-in-2" style="margin-bottom:1.5rem;padding:1rem 1.25rem">
+    <form method="GET" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div style="flex:2;min-width:220px">
+            <label class="form-label">Qidirish</label>
+            <div style="position:relative">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)">🔍</span>
+                <input type="text" name="q" class="form-control" style="padding-left:36px" placeholder="Ism yoki telefon..." value="{{ filters.q|default:'' }}">
+            </div>
+        </div>
+        <div style="flex:1;min-width:160px">
+            <label class="form-label">Biznes</label>
+            <select name="business" class="form-control" onchange="this.form.submit()">
+                <option value="">Barchasi</option>
+                {% for biz in businesses %}
+                <option value="{{ biz.pk }}" {% if filters.business == biz.pk|stringformat:"s" %}selected{% endif %}>{{ biz.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex:1;min-width:160px">
+            <label class="form-label">Saralash</label>
+            <select name="order" class="form-control" onchange="this.form.submit()">
+                <option value="-last_visit"    {% if filters.order == '-last_visit' %}selected{% endif %}>So'nggi tashrif</option>
+                <option value="-ticket_count"  {% if filters.order == '-ticket_count' %}selected{% endif %}>Ko'p tashrif</option>
+                <option value="ticket_count"   {% if filters.order == 'ticket_count' %}selected{% endif %}>Kam tashrif</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" style="align-self:flex-end">Qidirish</button>
+        {% if filters.q or filters.business %}
+        <a href="{% url 'business:customers' %}" class="btn btn-ghost btn-sm" style="align-self:flex-end">✕ Tozalash</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Customers table -->
+<div class="fade-in-3">
+    {% if customers %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mijoz</th>
+                    <th>Telefon</th>
+                    <th>Jami tashriflar</th>
+                    <th>Bajarilganlar</th>
+                    <th>So'nggi tashrif</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--rose));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">
+                                {{ c.customer__first_name|default:"?" |first|upper }}
+                            </div>
+                            <span style="font-weight:600">{{ c.customer__first_name|default:"Noma'lum" }}</span>
+                        </div>
+                    </td>
+                    <td style="font-family:var(--mono);font-size:0.85rem">{{ c.customer__phone|default:"—" }}</td>
+                    <td><span class="badge badge-purple">{{ c.ticket_count }} marta</span></td>
+                    <td><span class="badge badge-active">{{ c.done_count }}</span></td>
+                    <td style="font-size:0.83rem;color:var(--text-muted)">
+                        {% if c.last_visit %}{{ c.last_visit|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:3.5rem 2rem">
+        <div style="font-size:3rem;margin-bottom:1rem">👥</div>
+        <h3 style="font-weight:700;margin-bottom:0.5rem">Mijoz topilmadi</h3>
+        <p class="text-muted" style="font-size:0.875rem">
+            {% if filters.q %}
+            "{{ filters.q }}" bo'yicha natija yo'q
+            {% else %}
+            Hali hech kim xizmatdan foydalanmagan
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

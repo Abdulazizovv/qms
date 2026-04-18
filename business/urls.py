@@ -31,4 +31,10 @@ urlpatterns = [
     path('<int:biz_pk>/service/<int:service_pk>/slots/',                      views.timeslot_list,   name='timeslot_list'),
     path('<int:biz_pk>/service/<int:service_pk>/slots/create/',               views.timeslot_create, name='timeslot_create'),
     path('<int:biz_pk>/service/<int:service_pk>/slots/<int:pk>/delete/',      views.timeslot_delete, name='timeslot_delete'),
+
+    # Analytics & Management
+    path('analytics/sessions/',      views.sessions_analytics, name='sessions'),
+    path('analytics/customers/',     views.customers_list,     name='customers'),
+    path('analytics/feedbacks/',     views.feedbacks_list,     name='feedbacks'),
+    path('analytics/queue/',         views.queue_management,   name='queue_management'),
 ]

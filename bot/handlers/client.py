@@ -1,211 +1,203 @@
 """
 Client-facing handlers:
-  - Browse businesses / branches / services
+  - Browse businesses → branches → services
   - Take a real-time ticket
   - Book an appointment time slot
-  - Check ticket / appointment status
+  - View active tickets (text format)
 """
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
 
 from bot.keyboards import client as kb
+from bot.texts import t
 
 router = Router()
 
 
-# ─── Menu shortcuts ───────────────────────────────────────────────────────────
+async def _get_lang(tg_id: int) -> str:
+    """Return user's language preference, defaulting to 'uz'."""
+    from botapp.models import BotUser
+    bu = await BotUser.objects.filter(user_id=str(tg_id)).afirst()
+    return bu.language if bu else 'uz'
 
-@router.message(F.text == "🏢 Bizneslar")
+
+async def _require_user(tg_id: int):
+    """
+    Returns (bot_user, web_user).
+    bot_user is None if BotUser doesn't exist or has no phone.
+    web_user is None if no MyUser with that phone.
+    """
+    from botapp.models import BotUser
+    from user.models import MyUser
+
+    bu = await BotUser.objects.filter(user_id=str(tg_id)).afirst()
+    if not bu or not bu.phone_number:
+        return bu, None
+
+    web = await MyUser.objects.filter(phone=bu.phone_number).afirst()
+    return bu, web
+
+
+# ─── Main menu: Bizneslar ─────────────────────────────────────────────────────
+
+@router.message(F.text.in_({
+    "Bizneslar 🏢", "Бизнесы 🏢", "Businesses 🏢"
+}))
 async def menu_businesses(message: Message):
     from business.models import Business
-    businesses = [b async for b in Business.objects.filter(branches__is_active=True).distinct()]
+    lang = await _get_lang(message.from_user.id)
+    businesses = [b async for b in Business.objects.filter(
+        branches__is_active=True
+    ).distinct().order_by('title')]
     if not businesses:
-        await message.answer("Hozircha bizneslar yo'q.")
+        await message.answer(t(lang, 'no_businesses'))
         return
-    await message.answer("Biznesni tanlang:", reply_markup=kb.business_list(businesses))
+    await message.answer(t(lang, 'choose_biz'), reply_markup=kb.business_list(businesses, lang))
 
 
-@router.message(F.text == "🎫 Chiptalarim")
+# ─── Main menu: Navbatlarim ───────────────────────────────────────────────────
+
+@router.message(F.text.in_({
+    "Navbatlarim 📋", "Мои талоны 📋", "My Tickets 📋"
+}))
 async def menu_my_tickets(message: Message):
-    from botapp.models import BotUser
     from ticket.models import StatusTypes, Ticket
+    lang = await _get_lang(message.from_user.id)
 
-    bot_user = await BotUser.objects.filter(
-        user_id=str(message.from_user.id)
-    ).afirst()
-    if not bot_user or not bot_user.phone_number:
-        await message.answer("Iltimos avval /start buyrug'ini yuboring.")
+    bu, web_user = await _require_user(message.from_user.id)
+    if not bu or not bu.phone_number:
+        await message.answer("/start buyrug'ini yuboring.")
         return
-
-    from user.models import MyUser
-    user = await MyUser.objects.filter(phone=bot_user.phone_number).afirst()
-    if not user:
-        await message.answer("Siz hali ro'yxatdan o'tmagansiz. Veb-saytda ro'yxatdan o'ting.")
+    if not web_user:
+        await message.answer(t(lang, 'need_register'))
         return
 
     tickets = [
-        t async for t in Ticket.objects
-        .filter(customer=user, status__in=[StatusTypes.WAITING, StatusTypes.PROCESS])
+        tk async for tk in Ticket.objects
+        .filter(customer=web_user, status__in=[StatusTypes.WAITING, StatusTypes.PROCESS])
         .select_related('service__branch')
-        .order_by('-created_at')[:5]
+        .order_by('-created_at')[:10]
     ]
+
     if not tickets:
-        await message.answer("Sizda hozircha faol chipta yo'q.")
+        await message.answer(t(lang, 'no_tickets'))
         return
 
-    lines = []
-    for t in tickets:
-        pos = t.queue_position() if t.status == StatusTypes.WAITING else 0
-        lines.append(
-            f"🎫 <code>{t.number}</code> — {t.service.title}\n"
-            f"   Holat: <b>{t.get_status_display()}</b>"
-            + (f" | Navbat: {pos}" if pos else "")
-        )
-    await message.answer("\n\n".join(lines))
+    lines = [t(lang, 'tickets_hdr')]
+    for tk in tickets:
+        pos_text = ''
+        if tk.status == StatusTypes.WAITING:
+            pos = tk.queue_position()
+            pos_text = t(lang, 'ticket_pos', n=pos + 1)
+        lines.append(t(lang, 'ticket_row',
+                       num=tk.number,
+                       svc=tk.service.title,
+                       branch=tk.service.branch.title,
+                       status=tk.get_status_display(),
+                       pos=pos_text))
+
+    await message.answer("".join(lines))
 
 
-@router.message(F.text == "📅 Qabullarim")
-async def menu_my_appointments(message: Message):
-    from botapp.models import BotUser
-    from django.utils import timezone
-
-    bot_user = await BotUser.objects.filter(user_id=str(message.from_user.id)).afirst()
-    if not bot_user or not bot_user.phone_number:
-        await message.answer("Iltimos avval /start buyrug'ini yuboring.")
-        return
-
-    from user.models import MyUser
-    from ticket.models import Appointment, AppointmentStatus
-
-    user = await MyUser.objects.filter(phone=bot_user.phone_number).afirst()
-    if not user:
-        await message.answer("Siz hali ro'yxatdan o'tmagansiz.")
-        return
-
-    today = timezone.now().date()
-    appointments = [
-        a async for a in Appointment.objects
-        .filter(customer=user, time_slot__date__gte=today,
-                status__in=[AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED])
-        .select_related('time_slot__service__branch')
-        .order_by('time_slot__date', 'time_slot__start_time')[:5]
-    ]
-    if not appointments:
-        await message.answer("Sizda kelgusi qabullar yo'q.")
-        return
-
-    lines = []
-    for a in appointments:
-        slot = a.time_slot
-        lines.append(
-            f"📅 {slot.date.strftime('%d.%m.%Y')} "
-            f"{slot.start_time.strftime('%H:%M')}–{slot.end_time.strftime('%H:%M')}\n"
-            f"   {slot.service.title} — {slot.service.branch.title}\n"
-            f"   Holat: <b>{a.get_status_display()}</b>"
-        )
-    await message.answer("\n\n".join(lines))
-
-
-@router.message(F.text == "👤 Profil")
-async def menu_profile(message: Message):
-    from botapp.models import BotUser
-    bot_user = await BotUser.objects.filter(user_id=str(message.from_user.id)).afirst()
-    phone = bot_user.phone_number if bot_user else "—"
-    await message.answer(
-        f"👤 <b>Profil</b>\n\n"
-        f"Ism: {message.from_user.full_name}\n"
-        f"Telefon: {phone}\n"
-        f"Telegram: @{message.from_user.username or '—'}"
-    )
-
-
-# ─── Business / Branch / Service navigation ────────────────────────────────────
+# ─── Navigation: business → branches ─────────────────────────────────────────
 
 @router.callback_query(F.data.startswith("biz:"))
 async def show_branches(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     biz_pk = int(call.data.split(":")[1])
     from business.models import Branch
-    branches = [b async for b in Branch.objects.filter(business_id=biz_pk, is_active=True)]
+    branches = [b async for b in Branch.objects.filter(
+        business_id=biz_pk, is_active=True
+    ).order_by('title')]
     if not branches:
-        await call.answer("Bu biznesda faol filiallar yo'q", show_alert=True)
+        await call.answer(t(lang, 'no_branches'), show_alert=True)
         return
     await call.message.edit_text(
-        "Filialni tanlang:",
-        reply_markup=kb.branch_list(branches, biz_pk),
+        t(lang, 'choose_branch'),
+        reply_markup=kb.branch_list(branches, biz_pk, lang),
     )
 
+
+# ─── Navigation: branch → services ───────────────────────────────────────────
 
 @router.callback_query(F.data.startswith("branch:"))
 async def show_services(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     branch_pk = int(call.data.split(":")[1])
     from business.models import Service
-    services = [s async for s in Service.objects.filter(branch_id=branch_pk, status='active')]
+    services = [s async for s in Service.objects.filter(
+        branch_id=branch_pk, status='active'
+    ).order_by('title')]
     if not services:
-        await call.answer("Bu filialda faol xizmatlar yo'q", show_alert=True)
+        await call.answer(t(lang, 'no_services'), show_alert=True)
         return
     await call.message.edit_text(
-        "Xizmatni tanlang:",
-        reply_markup=kb.service_list(services, branch_pk),
+        t(lang, 'choose_svc'),
+        reply_markup=kb.service_list(services, branch_pk, lang),
     )
 
 
+# ─── Service detail ───────────────────────────────────────────────────────────
+
 @router.callback_query(F.data.startswith("svc:"))
 async def show_service_options(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     svc_pk = int(call.data.split(":")[1])
     from business.models import Service, QueueType
     from ticket.models import StatusTypes, Ticket
 
     svc = await Service.objects.select_related('branch').aget(pk=svc_pk)
     waiting = await Ticket.objects.filter(service=svc, status=StatusTypes.WAITING).acount()
+    price_str = f"{svc.price:,} so'm" if svc.price else t(lang, 'price_free')
 
-    text = (
-        f"<b>{svc.title}</b>\n"
-        f"📍 {svc.branch.title}\n"
-        f"⏱ ~{svc.estimated_time_minutes} daqiqa\n"
-        f"🎫 Navbatda: {waiting} kishi"
-    )
+    text = t(lang, 'svc_info',
+             title=svc.title,
+             branch=svc.branch.title,
+             time=svc.estimated_time_minutes,
+             price=price_str,
+             waiting=waiting)
 
     if svc.queue_type in (QueueType.REALTIME, QueueType.BOTH):
-        await call.message.edit_text(text, reply_markup=kb.take_ticket_confirm(svc_pk))
+        await call.message.edit_text(text, reply_markup=kb.take_ticket_confirm(svc_pk, lang))
     elif svc.queue_type == QueueType.APPOINTMENT:
         from django.utils import timezone
-        today = timezone.now().date()
         from business.models import TimeSlot
+        today = timezone.now().date()
         slots = [s async for s in TimeSlot.objects.filter(
             service=svc, date__gte=today, is_active=True
         ).order_by('date', 'start_time')[:10]]
         await call.message.edit_text(
-            text + "\n\nVaqt tanlang:",
-            reply_markup=kb.timeslot_list(slots, svc_pk),
+            text,
+            reply_markup=kb.timeslot_list(slots, svc_pk, lang),
         )
+    else:
+        await call.message.edit_text(text)
 
 
-# ─── Take ticket (real-time) ──────────────────────────────────────────────────
+# ─── Take ticket ──────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data.startswith("take:"))
 async def take_ticket(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     svc_pk = int(call.data.split(":")[1])
-    from botapp.models import BotUser
-    from user.models import MyUser
+
+    bu, web_user = await _require_user(call.from_user.id)
+    if not bu or not bu.phone_number:
+        await call.answer(t(lang, 'need_phone'), show_alert=True)
+        return
+    if not web_user:
+        await call.answer(t(lang, 'need_register'), show_alert=True)
+        return
+
     from business.models import Service
     from ticket.models import Ticket, StatusTypes
     from django.utils import timezone
 
-    bot_user = await BotUser.objects.filter(user_id=str(call.from_user.id)).afirst()
-    if not bot_user or not bot_user.phone_number:
-        await call.answer("Avval telefon raqamingizni yuboring (/start).", show_alert=True)
-        return
-
-    user = await MyUser.objects.filter(phone=bot_user.phone_number).afirst()
-    if not user:
-        await call.answer("Veb-saytda ro'yxatdan o'tish talab etiladi.", show_alert=True)
-        return
-
-    svc = await Service.objects.aget(pk=svc_pk)
+    svc = await Service.objects.select_related('branch').aget(pk=svc_pk)
     today = timezone.now().date()
 
     existing = await Ticket.objects.filter(
-        customer=user, service=svc,
+        customer=web_user, service=svc,
         status__in=[StatusTypes.WAITING, StatusTypes.PROCESS],
         created_at__date=today,
     ).afirst()
@@ -213,28 +205,28 @@ async def take_ticket(call: CallbackQuery):
     if existing:
         pos = existing.queue_position()
         await call.message.edit_text(
-            f"Sizda allaqachon <code>{existing.number}</code> raqamli chipta bor.\n"
-            f"Navbatingiz: {pos}-o'rin"
+            t(lang, 'already_ticket', num=existing.number, pos=pos + 1)
         )
         return
 
-    ticket = await Ticket.objects.acreate(service=svc, customer=user)
-    pos    = ticket.queue_position()
+    ticket = await Ticket.objects.acreate(service=svc, customer=web_user)
+    pos = ticket.queue_position()
     await call.message.edit_text(
-        f"✅ <b>Chipta olindi!</b>\n\n"
-        f"🎫 Raqam: <code>{ticket.number}</code>\n"
-        f"💼 {svc.title}\n"
-        f"📍 {svc.branch.title}\n"
-        f"👥 Navbatingiz: <b>{pos + 1}</b>-o'rin\n"
-        f"⏱ Taxminiy kutish: <b>~{ticket.estimated_wait_minutes()} daq</b>"
+        t(lang, 'ticket_taken',
+          num=ticket.number,
+          svc=svc.title,
+          branch=svc.branch.title,
+          pos=pos + 1,
+          wait=ticket.estimated_wait_minutes())
     )
-    await call.answer("Chipta muvaffaqiyatli olindi! ✅")
+    await call.answer()
 
 
-# ─── Book appointment ─────────────────────────────────────────────────────────
+# ─── Book appointment slot ────────────────────────────────────────────────────
 
 @router.callback_query(F.data.startswith("slot:"))
 async def show_slot_confirm(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     slot_pk = int(call.data.split(":")[1])
     from business.models import TimeSlot
     slot = await TimeSlot.objects.select_related('service__branch').aget(pk=slot_pk)
@@ -244,59 +236,53 @@ async def show_slot_confirm(call: CallbackQuery):
         f"🕐 {slot.start_time.strftime('%H:%M')}–{slot.end_time.strftime('%H:%M')}\n"
         f"💼 {slot.service.title}\n"
         f"📍 {slot.service.branch.title}",
-        reply_markup=kb.confirm_booking(slot_pk),
+        reply_markup=kb.confirm_booking(slot_pk, lang),
     )
 
 
 @router.callback_query(F.data.startswith("book:"))
 async def book_slot(call: CallbackQuery):
+    lang = await _get_lang(call.from_user.id)
     slot_pk = int(call.data.split(":")[1])
-    from botapp.models import BotUser
-    from user.models import MyUser
+
+    bu, web_user = await _require_user(call.from_user.id)
+    if not bu or not bu.phone_number:
+        await call.answer(t(lang, 'need_phone'), show_alert=True)
+        return
+    if not web_user:
+        await call.answer(t(lang, 'need_register'), show_alert=True)
+        return
+
     from business.models import TimeSlot
     from ticket.models import Appointment, AppointmentStatus
-    from ticket.services import confirm_appointment
-
-    bot_user = await BotUser.objects.filter(user_id=str(call.from_user.id)).afirst()
-    if not bot_user or not bot_user.phone_number:
-        await call.answer("Avval telefon raqamingizni yuboring.", show_alert=True)
-        return
-
-    user = await MyUser.objects.filter(phone=bot_user.phone_number).afirst()
-    if not user:
-        await call.answer("Veb-saytda ro'yxatdan o'ting.", show_alert=True)
-        return
 
     slot = await TimeSlot.objects.select_related('service__branch').aget(pk=slot_pk)
-
     if slot.is_full:
         await call.answer("Kechirasiz, bu vaqt band bo'ldi.", show_alert=True)
         return
 
-    existing = await Appointment.objects.filter(
-        time_slot=slot, customer=user
-    ).afirst()
+    existing = await Appointment.objects.filter(time_slot=slot, customer=web_user).afirst()
     if existing:
         await call.answer("Siz bu vaqtga allaqachon yozilgansiz.", show_alert=True)
         return
 
-    apt = await Appointment.objects.acreate(
-        time_slot=slot, customer=user,
+    await Appointment.objects.acreate(
+        time_slot=slot, customer=web_user,
         status=AppointmentStatus.CONFIRMED,
     )
-
     await call.message.edit_text(
         f"✅ <b>Qabul muvaffaqiyatli yozildi!</b>\n\n"
         f"📅 {slot.date.strftime('%d.%m.%Y')}\n"
         f"🕐 {slot.start_time.strftime('%H:%M')}–{slot.end_time.strftime('%H:%M')}\n"
-        f"💼 {slot.service.title}\n"
-        f"📍 {slot.service.branch.title}\n\n"
-        f"Qabuldan 30 daqiqa oldin eslatma yuboriladi."
+        f"💼 {slot.service.title}\n📍 {slot.service.branch.title}"
     )
-    await call.answer("Yozilindi! ✅")
+    await call.answer()
 
+
+# ─── Cancel / back ────────────────────────────────────────────────────────────
 
 @router.callback_query(F.data == "cancel")
 async def cancel_action(call: CallbackQuery):
-    await call.message.edit_text("Bekor qilindi.")
+    lang = await _get_lang(call.from_user.id)
+    await call.message.edit_text(t(lang, 'cancelled'))
     await call.answer()

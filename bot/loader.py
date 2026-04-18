@@ -5,5 +5,5 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 TOKEN = os.environ.get('TOKEN', '')
 
-bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
+bot = Bot(token="8553368129:AAEBEtfmX-MCwYwngB-v6I3rpqAfq7Kv5UM")
 dp  = Dispatcher(storage=MemoryStorage())

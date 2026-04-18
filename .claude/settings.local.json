@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pip install *)",
       "Bash(python manage.py migrate)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(find c:/Users/quettabyte/Desktop/hakaton/qms -name \"consumers.py\" -exec cat {} \\\\;)"
     ]
   }
 }

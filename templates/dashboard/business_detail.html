@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ business.title }}{% endblock %}
 
+{% block sidebar %}
+{% include "dashboard/_sidebar.html" with active="businesses" %}
+{% endblock %}
+
 {% block content %}
 <!-- Header -->
 <div class="flex-between fade-in" style="margin-bottom:1.5rem">

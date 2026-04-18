@@ -197,8 +197,8 @@
 </main>
 {% endblock %}
 
-{% if is_waiting or is_process %}
 {% block extra_js %}
+{% if is_waiting or is_process %}
 <script>
 (function() {
     var TICKET_NUMBER = '{{ ticket.number }}';
@@ -273,5 +273,5 @@
     connect();
 })();
 </script>
-{% endblock %}
 {% endif %}
+{% endblock %}

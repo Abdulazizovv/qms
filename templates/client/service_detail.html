@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ service.title }}{% endblock %}
+
+{% block full_page %}
+<main class="main-content" style="max-width:600px;margin:0 auto;padding:2rem 1.5rem">
+
+    <!-- Back -->
+    <a href="{% url 'client:branch_detail' service.branch.pk %}" style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-muted);text-decoration:none;margin-bottom:1.5rem;transition:color 0.15s" onmouseover="this.style.color='var(--purple)'" onmouseout="this.style.color='var(--text-muted)'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        {{ service.branch.title }}
+    </a>
+
+    <!-- Service card -->
+    <div class="card fade-in" style="padding:2rem;text-align:center;margin-bottom:1.25rem">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 1.25rem;box-shadow:var(--sh-lg)">💼</div>
+        <h1 style="font-size:1.55rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:0.4rem">{{ service.title }}</h1>
+        {% if service.description %}
+        <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.6;margin-bottom:1.25rem">{{ service.description }}</p>
+        {% endif %}
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem">
+            <div style="background:var(--purple-s);border-radius:var(--r-sm);padding:14px 10px">
+                <div style="font-size:1.35rem;font-weight:800;color:var(--purple);font-family:var(--mono)">{{ service.estimated_time_minutes }}</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Daqiqa</div>
+            </div>
+            <div style="background:var(--rose-s);border-radius:var(--r-sm);padding:14px 10px">
+                <div style="font-size:1.35rem;font-weight:800;color:var(--rose);font-family:var(--mono)">{{ waiting_count }}</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Navbatda</div>
+            </div>
+            <div style="background:var(--mint-s);border-radius:var(--r-sm);padding:14px 10px">
+                <div style="font-size:1.35rem;font-weight:800;color:var(--mint-d);font-family:var(--mono)">{% if service.price %}{{ service.price }}{% else %}0{% endif %}</div>
+                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">So'm</div>
+            </div>
+        </div>
+
+        {% if service.requirements %}
+        <div style="background:var(--bg-hover);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:1.25rem;text-align:left">
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:5px">Talab qilinadi</div>
+            <p style="font-size:0.845rem;color:var(--text-dim);line-height:1.5">{{ service.requirements }}</p>
+        </div>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'client:ticket_take' service.branch.pk service.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-block btn-lg"
+                    style="font-size:1rem;border-radius:var(--r);padding:15px">
+                🎫 Navbat olish
+            </button>
+        </form>
+        {% else %}
+        <a href="{% url 'auth:login' %}?next={{ request.path }}" class="btn btn-primary btn-block btn-lg"
+           style="font-size:1rem;border-radius:var(--r);padding:15px">
+            🔐 Kirish va navbat olish
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Waiting info -->
+    {% if waiting_count > 0 %}
+    <div class="card fade-in-2" style="padding:1rem 1.25rem;background:var(--purple-s);border:1.5px solid var(--purple);text-align:center">
+        <p style="font-size:0.865rem;color:var(--purple-d);font-weight:600">
+            Hozir <strong>{{ waiting_count }} kishi</strong> navbatda kutmoqda.
+            Taxminiy kutish vaqti: <strong>{{ waiting_count|add:0 }} × {{ service.estimated_time_minutes }} = {{ waiting_count }} daqiqa</strong>
+        </p>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

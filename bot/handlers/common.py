@@ -1,46 +1,134 @@
 """
-Common handlers: /start, contact sharing, /help
+Common handlers: /start, language selection, contact sharing.
+Flow:
+  /start
+    → if no BotUser or no language → show language inline keyboard
+    → after lang chosen → show phone-share button
+    → after phone received → show main menu
+    → if already registered → show main menu
 """
 from aiogram import F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, Message
 
-from bot.keyboards.client import main_menu, request_contact
+from bot.texts import t
+from bot.keyboards.client import lang_selection, main_menu, request_contact
 
 router = Router()
 
 
-@router.message(CommandStart())
-async def start_handler(message: Message):
-    import django
-    django.setup()              # ensure Django ORM is ready
-    from botapp.models import BotUser
+class RegState(StatesGroup):
+    lang  = State()   # waiting for language choice
+    phone = State()   # waiting for contact
 
+
+async def _get_or_create_user(tg_user):
+    from botapp.models import BotUser
     user, _ = await BotUser.objects.aupdate_or_create(
-        user_id=str(message.from_user.id),
+        user_id=str(tg_user.id),
         defaults={
-            'full_name': message.from_user.full_name,
-            'username':  message.from_user.username or '',
+            'full_name': tg_user.full_name or '',
+            'username':  tg_user.username  or '',
         },
     )
+    return user
 
-    if not user.phone_number:
+
+# ─── /start ──────────────────────────────────────────────────────────────────
+
+@router.message(CommandStart())
+async def start_handler(message: Message, state: FSMContext):
+    await state.clear()
+    bot_user = await _get_or_create_user(message.from_user)
+    name = message.from_user.first_name or message.from_user.full_name or "Foydalanuvchi"
+
+    # Already fully registered → show main menu
+    if bot_user.phone_number and bot_user.language:
+        lang = bot_user.language
         await message.answer(
-            f"Salom, <b>{message.from_user.first_name}</b>! 👋\n\n"
-            "QueuePro botiga xush kelibsiz.\n"
-            "Davom etish uchun telefon raqamingizni yuboring:",
-            reply_markup=request_contact(),
+            t(lang, 'welcome', name=name),
+            reply_markup=main_menu(lang),
+        )
+        return
+
+    # Need language selection first
+    await state.set_state(RegState.lang)
+    await message.answer(
+        t('uz', 'choose_lang'),   # language picker itself in uz/ru/en
+        reply_markup=lang_selection(),
+    )
+
+
+# ─── Language selection ───────────────────────────────────────────────────────
+
+@router.callback_query(RegState.lang, F.data.startswith("lang:"))
+async def language_chosen(call: CallbackQuery, state: FSMContext):
+    lang = call.data.split(":")[1]   # uz / ru / en
+    if lang not in ('uz', 'ru', 'en'):
+        lang = 'uz'
+
+    bot_user = await _get_or_create_user(call.from_user)
+    await bot_user.__class__.objects.filter(
+        user_id=str(call.from_user.id)
+    ).aupdate(language=lang)
+
+    await call.answer()
+    name = call.from_user.first_name or call.from_user.full_name or "Foydalanuvchi"
+
+    # If already has phone, go straight to menu
+    if bot_user.phone_number:
+        await call.message.edit_text(t(lang, 'welcome', name=name))
+        await call.message.answer(
+            t(lang, 'welcome', name=name),
+            reply_markup=main_menu(lang),
+        )
+        await state.clear()
+        return
+
+    # Ask for phone
+    await state.set_state(RegState.phone)
+    await call.message.edit_text(t(lang, 'send_phone', name=name))
+    await call.message.answer(
+        t(lang, 'send_phone', name=name),
+        reply_markup=request_contact(lang),
+    )
+
+
+# Language can also be changed from main menu (no FSM state required)
+@router.callback_query(F.data.startswith("lang:"))
+async def language_change(call: CallbackQuery, state: FSMContext):
+    lang = call.data.split(":")[1]
+    if lang not in ('uz', 'ru', 'en'):
+        lang = 'uz'
+    await call.answer()
+    from botapp.models import BotUser
+    await BotUser.objects.filter(user_id=str(call.from_user.id)).aupdate(language=lang)
+
+    bot_user = await BotUser.objects.filter(user_id=str(call.from_user.id)).afirst()
+    name = call.from_user.first_name or call.from_user.full_name or "Foydalanuvchi"
+
+    if bot_user and not bot_user.phone_number:
+        await state.set_state(RegState.phone)
+        await call.message.edit_text(t(lang, 'send_phone', name=name))
+        await call.message.answer(
+            t(lang, 'send_phone', name=name),
+            reply_markup=request_contact(lang),
         )
     else:
-        await message.answer(
-            f"Xush kelibsiz, <b>{message.from_user.first_name}</b>! 👋\n\n"
-            "Quyidagi menyudan foydalaning:",
-            reply_markup=main_menu(),
+        await call.message.edit_text(t(lang, 'welcome', name=name))
+        await call.message.answer(
+            t(lang, 'welcome', name=name),
+            reply_markup=main_menu(lang),
         )
+        await state.clear()
 
+
+# ─── Contact / Phone sharing ─────────────────────────────────────────────────
 
 @router.message(F.contact)
-async def contact_handler(message: Message):
+async def contact_handler(message: Message, state: FSMContext):
     from botapp.models import BotUser
 
     phone = message.contact.phone_number
@@ -51,8 +139,13 @@ async def contact_handler(message: Message):
         user_id=str(message.from_user.id)
     ).aupdate(phone_number=phone)
 
+    bot_user = await BotUser.objects.filter(
+        user_id=str(message.from_user.id)
+    ).afirst()
+    lang = bot_user.language if bot_user else 'uz'
+
+    await state.clear()
     await message.answer(
-        "✅ Telefon raqam saqlandi!\n\n"
-        "Endi barcha xizmatlardan foydalanishingiz mumkin.",
-        reply_markup=main_menu(),
+        t(lang, 'phone_saved'),
+        reply_markup=main_menu(lang),
     )

@@ -10,12 +10,152 @@ from ticket.models import Appointment, AppointmentStatus, Feedback, StatusTypes,
 # ─── Client: Business / Branch listing ────────────────────────────────────────
 
 def client_home(request):
+    if not request.user.is_authenticated:
+        return render(request, 'advert/base_home.html')
+    if request.user.user_type == 'owner':
+        return redirect('dashboard:index')
+    if request.user.user_type == 'operator':
+        return redirect('operator:panel')
     businesses = (
         Business.objects
         .prefetch_related('branches')
         .order_by('title')
     )
     return render(request, 'client/home.html', {'businesses': businesses})
+
+
+# ─── Client: Service detail ───────────────────────────────────────────────────
+
+def service_detail(request, service_pk):
+    service = get_object_or_404(Service, pk=service_pk, status='active')
+    waiting_count = Ticket.objects.filter(
+        service=service, status=StatusTypes.WAITING
+    ).count()
+    return render(request, 'client/service_detail.html', {
+        'service':       service,
+        'waiting_count': waiting_count,
+    })
+
+
+# ─── Client: My tickets list ──────────────────────────────────────────────────
+
+@login_required
+def my_tickets_list(request):
+    all_tickets = (
+        Ticket.objects
+        .filter(customer=request.user)
+        .select_related('service__branch__business')
+        .order_by('-created_at')
+    )
+    active_ticket = all_tickets.filter(
+        status__in=[StatusTypes.WAITING, StatusTypes.PROCESS]
+    ).first()
+
+    position  = 0
+    wait_mins = 0
+    others_in_queue = []
+
+    if active_ticket:
+        if active_ticket.status == StatusTypes.WAITING:
+            position  = active_ticket.queue_position()
+            wait_mins = active_ticket.estimated_wait_minutes()
+        others_in_queue = list(
+            Ticket.objects
+            .filter(service=active_ticket.service, status=StatusTypes.WAITING)
+            .exclude(pk=active_ticket.pk)
+            .order_by('created_at')[:5]
+        )
+
+    history_tickets = list(
+        all_tickets.filter(
+            status__in=[StatusTypes.DONE, StatusTypes.CANCEL, StatusTypes.SKIPPED]
+        )[:10]
+    )
+
+    return render(request, 'client/my_tickets.html', {
+        'active_ticket':    active_ticket,
+        'history_tickets':  history_tickets,
+        'position':         position,
+        'wait_mins':        wait_mins,
+        'others_in_queue':  others_in_queue,
+    })
+
+
+# ─── Client: Cancel a waiting ticket ─────────────────────────────────────────
+
+@login_required
+def ticket_cancel(request, ticket_pk):
+    if request.method != 'POST':
+        return redirect('client:my_tickets')
+    ticket = get_object_or_404(
+        Ticket, pk=ticket_pk,
+        customer=request.user,
+        status__in=[StatusTypes.WAITING, StatusTypes.PROCESS],
+    )
+    ticket.status = StatusTypes.CANCEL
+    ticket.save(update_fields=['status'])
+    messages.success(request, "Navbatdan chiqildi.")
+    return redirect('client:my_tickets')
+
+
+# ─── Client: Profile ─────────────────────────────────────────────────────────
+
+@login_required
+def profile_view(request):
+    total_tickets = Ticket.objects.filter(customer=request.user).count()
+    done_tickets  = Ticket.objects.filter(
+        customer=request.user, status=StatusTypes.DONE
+    ).count()
+    saved_minutes = done_tickets * 20   # rough average
+    return render(request, 'client/profile.html', {
+        'total_tickets': total_tickets,
+        'done_tickets':  done_tickets,
+        'saved_minutes': saved_minutes,
+    })
+
+
+# ─── Client: Help / AI chat ───────────────────────────────────────────────────
+
+def _ai_response(question: str) -> str:
+    q = question.lower()
+    if any(k in q for k in ['navbat ol', 'qanday olinadi', 'chipta ol']):
+        return ("Navbat olish uchun:\n"
+                "1. Asosiy sahifaga o'ting\n"
+                "2. Kerakli biznes va filialini tanlang\n"
+                "3. Xizmat kartasiga bosing\n"
+                "4. 'Navbat olish' tugmasini bosing — chipta tayyor!")
+    if any(k in q for k in ['bekor', 'chiq', 'navbatdan']):
+        return ("Navbatdan chiqish uchun Chiptalarim sahifasiga o'ting va "
+                "faol chipta yonidagi 'Navbatdan chiqish' tugmasini bosing.")
+    if any(k in q for k in ['ish vaqt', 'qachon ish', 'yopiq', 'ochiq']):
+        return ("Har bir filialning ish vaqtlari xizmatlar sahifasida "
+                "MA'LUMOTLAR bo'limida ko'rsatilgan.")
+    if any(k in q for k in ['status', 'holat', 'qayerda', 'nechinchi']):
+        return ("Chipta statusini Chiptalarim sahifasida ko'rishingiz mumkin. "
+                "U yerda chipta raqami, kutish vaqti va navbatingiz joyi ko'rsatiladi.")
+    if any(k in q for k in ['telegram', 'bot', 'bildirishnoma']):
+        return ("Telegram botimiz orqali navbat olish va bildirishnomalar olish mumkin. "
+                "Navbar yuqorisidagi 'Telegram' tugmasidan botga o'ting.")
+    if any(k in q for k in ['narx', 'pul', 'to\'lov', 'qancha']):
+        return ("Har bir xizmatning narxi xizmat sahifasida ko'rsatilgan. "
+                "Ba'zi xizmatlar bepul bo'lishi mumkin.")
+    return (f"Savolingiz: '{question}'\n\n"
+            "Men bu savolga aniq javob bera olmayman. "
+            "Qo'shimcha yordam uchun Telegram botimizga murojaat qiling yoki "
+            "filial operatori bilan bog'laning. 😊")
+
+
+def help_view(request):
+    user_question = None
+    ai_response   = None
+    if request.method == 'POST':
+        user_question = request.POST.get('question', '').strip()
+        if user_question:
+            ai_response = _ai_response(user_question)
+    return render(request, 'client/help.html', {
+        'user_question': user_question,
+        'ai_response':   ai_response,
+    })
 
 
 def branch_detail(request, branch_pk):
@@ -66,7 +206,7 @@ def ticket_take(request, branch_pk, service_pk):
     ticket = Ticket.objects.create(service=service, customer=request.user)
     request.session['last_ticket'] = ticket.number   # remember for nav
     messages.success(request, f"Chipta {ticket.number} muvaffaqiyatli olindi!")
-    return redirect('client:my_ticket', number=ticket.number)
+    return redirect('client:my_tickets')
 
 
 # ─── Client: Track ticket status ──────────────────────────────────────────────

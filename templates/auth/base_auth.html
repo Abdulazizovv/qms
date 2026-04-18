@@ -3,29 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SmartNavbat{% endblock %}</title>
+    <title>{% block title %}Tartibli{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:        #0a0e1a;
-            --bg-card:   #111827;
-            --border:    #1e2d45;
-            --border-lite: #243450;
-            --accent:    #7C3AED;
-            --accent-2:  #a78bfa;
-            --accent-glow: rgba(124,58,237,0.2);
-            --success:   #10b981;
-            --danger:    #ef4444;
-            --text:      #e2e8f0;
-            --text-muted:#64748b;
-            --text-dim:  #94a3b8;
-            --font:      'Inter', sans-serif;
-            --mono:      'JetBrains Mono', monospace;
-            --radius:    14px;
-            --radius-sm: 9px;
+            --purple:     #8572E4;
+            --purple-d:   #7461D4;
+            --purple-s:   rgba(133,114,228,0.10);
+            --purple-g:   rgba(133,114,228,0.18);
+            --mint:       #98FFD9;
+            --mint-d:     #3DD9A4;
+            --rose:       #BD5182;
+            --bg:         #F8F9FA;
+            --bg-card:    #FFFFFF;
+            --border:     #E8E6F6;
+            --border-d:   #D0CCEE;
+            --text:       #0D0B1E;
+            --text-dim:   #4A4568;
+            --text-muted: #9290B0;
+            --success:    #059669;
+            --danger:     #DC2626;
+            --font:       'Inter', sans-serif;
+            --r:          16px;
+            --r-sm:       10px;
+            --sh:         0 2px 12px rgba(133,114,228,0.09);
+            --sh-lg:      0 8px 36px rgba(133,114,228,0.16);
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -33,123 +37,92 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── Left Panel ── */
-        .auth-visual {
-            background: linear-gradient(135deg, #0f0a2a 0%, #130d35 50%, #0a0d1a 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 3rem;
-            position: relative;
-            overflow: hidden;
+        /* ── Top nav ── */
+        .auth-topnav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
         }
-        .auth-visual::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(124,58,237,0.18) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(167,139,250,0.1) 0%, transparent 50%);
+        .auth-topnav-brand {
+            display: flex; align-items: center; gap: 9px;
+            text-decoration: none;
         }
-        .auth-visual-grid {
-            position: absolute; inset: 0;
-            background-image:
-                linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-        .brand {
-            display: flex; align-items: center; gap: 12px;
-            position: relative; z-index: 1;
-        }
-        .brand-icon {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            border-radius: 12px;
+        .auth-topnav-brand-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--purple), var(--rose));
+            border-radius: 9px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 30px rgba(59,130,246,0.4);
+            font-size: 16px;
         }
-        .brand-name {
-            font-size: 1.4rem; font-weight: 800;
-            letter-spacing: -0.03em;
-            color: var(--text);
+        .auth-topnav-brand-name {
+            font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text);
         }
-        .brand-name span { color: var(--accent); }
+        .auth-topnav-brand-name span { color: var(--purple); }
+        .auth-topnav-back {
+            display: flex; align-items: center; gap: 6px;
+            color: var(--text-muted); font-size: 0.83rem; font-weight: 600;
+            text-decoration: none;
+            padding: 7px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            transition: all 0.18s;
+        }
+        .auth-topnav-back:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-s); }
+        .auth-topnav-back svg { transition: transform 0.18s; }
+        .auth-topnav-back:hover svg { transform: translateX(-3px); }
 
-        .auth-hero { position: relative; z-index: 1; }
-        .auth-hero h2 {
-            font-size: 2.4rem; font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-        .auth-hero h2 span {
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .auth-hero p {
-            color: var(--text-dim);
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-
-        .feature-list { position: relative; z-index: 1; }
-        .feature-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-dim);
-            font-size: 0.875rem;
-        }
-        .feature-item:last-child { border-bottom: none; }
-        .feature-icon {
-            width: 32px; height: 32px;
-            background: rgba(59,130,246,0.1);
-            border: 1px solid rgba(59,130,246,0.2);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; flex-shrink: 0;
-        }
-
-        /* ── Right Panel (Form) ── */
-        .auth-form-panel {
+        /* ── Page body ── */
+        .auth-page-body {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            background: var(--bg);
+            padding: 2.5rem 1rem 3rem;
         }
-        .auth-box {
+        .auth-wrapper {
             width: 100%;
-            max-width: 420px;
-        }
-        .auth-box-header {
-            margin-bottom: 2rem;
-        }
-        .auth-box-header h1 {
-            font-size: 1.75rem; font-weight: 700;
-            letter-spacing: -0.03em;
-            margin-bottom: 6px;
-        }
-        .auth-box-header p {
-            color: var(--text-muted);
-            font-size: 0.875rem;
+            max-width: 440px;
+            animation: fadeUp 0.35s ease;
         }
 
-        /* Form */
-        .form-group { margin-bottom: 1.2rem; }
+        /* ── Card ── */
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 2.25rem;
+            box-shadow: var(--sh-lg);
+        }
+        .auth-card-header {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+        .auth-card-header h1 {
+            font-size: 1.5rem; font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 5px;
+        }
+        .auth-card-header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Form ── */
+        .form-group { margin-bottom: 1.1rem; }
         .form-label {
             display: block;
-            font-size: 0.78rem; font-weight: 600;
+            font-size: 0.74rem; font-weight: 700;
             color: var(--text-dim);
-            margin-bottom: 6px;
-            letter-spacing: 0.03em;
+            margin-bottom: 5px;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
         }
         .input-wrap { position: relative; }
@@ -157,178 +130,164 @@
             position: absolute; left: 12px; top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 16px; pointer-events: none;
+            font-size: 15px; pointer-events: none;
+            z-index: 1;
         }
+        .input-toggle {
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); padding: 4px;
+            display: flex; align-items: center;
+            transition: color 0.15s;
+        }
+        .input-toggle:hover { color: var(--purple); }
         .form-control {
             width: 100%;
-            padding: 12px 14px 12px 40px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
+            padding: 11px 13px 11px 38px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
             color: var(--text);
             font-family: var(--font);
             font-size: 0.9rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            appearance: none;
         }
-        .form-control.no-icon { padding-left: 14px; }
+        .form-control.has-toggle { padding-right: 42px; }
+        .form-control.no-icon { padding-left: 13px; }
         .form-control:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px var(--purple-g);
+            background: #fff;
         }
+        .form-control.is-error { border-color: var(--danger); }
         .form-control::placeholder { color: var(--text-muted); }
-        .form-error {
-            color: var(--danger);
-            font-size: 0.78rem;
-            margin-top: 4px;
-            display: block;
-        }
+        .form-error { color: var(--danger); font-size: 0.75rem; margin-top: 4px; display: block; }
 
-        /* Role selector */
-        .role-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 10px; margin-top: 6px;
-        }
-        .role-card {
-            position: relative;
-        }
-        .role-card input[type="radio"] {
-            position: absolute; opacity: 0; pointer-events: none;
-        }
+        /* ── Role selector ── */
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+        .role-card { position: relative; }
+        .role-card input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
         .role-label {
             display: flex; flex-direction: column;
-            align-items: center; gap: 8px;
-            padding: 16px 12px;
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
+            align-items: center; gap: 7px;
+            padding: 14px 10px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.18s;
             text-align: center;
         }
-        .role-label:hover { border-color: var(--border-lite); }
+        .role-label:hover { border-color: var(--purple); background: var(--purple-s); }
         .role-card input:checked + .role-label {
-            border-color: var(--accent);
-            background: rgba(124,58,237,0.07);
+            border-color: var(--purple);
+            background: var(--purple-s);
+            box-shadow: 0 0 0 3px var(--purple-g);
         }
-        .role-emoji { font-size: 1.5rem; }
-        .role-text { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); }
-        .role-card input:checked + .role-label .role-text { color: var(--accent); }
+        .role-emoji { font-size: 1.4rem; }
+        .role-text { font-size: 0.78rem; font-weight: 700; color: var(--text-dim); }
+        .role-card input:checked + .role-label .role-text { color: var(--purple); }
 
-        /* Submit */
+        /* ── Button ── */
         .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
             width: 100%;
             padding: 13px 20px;
-            background: var(--accent);
+            background: var(--purple);
             color: #fff;
-            border: none; border-radius: var(--radius-sm);
+            border: none; border-radius: var(--r-sm);
             font-family: var(--font);
             font-size: 0.95rem; font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 0 24px rgba(124,58,237,0.35);
+            transition: all 0.18s;
+            box-shadow: 0 4px 18px var(--purple-g);
             letter-spacing: 0.01em;
         }
-        .btn:hover {
-            background: #6d28d9;
-            box-shadow: 0 0 36px rgba(124,58,237,0.55);
-            transform: translateY(-1px);
-        }
-        .btn:active { transform: translateY(0); }
+        .btn:hover { background: var(--purple-d); transform: translateY(-1px); box-shadow: 0 6px 26px rgba(133,114,228,0.35); }
+        .btn:active { transform: none; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
+        /* ── Divider ── */
         .divider {
             display: flex; align-items: center; gap: 12px;
-            margin: 1.5rem 0;
+            margin: 1.25rem 0;
             color: var(--text-muted);
             font-size: 0.78rem;
         }
-        .divider::before, .divider::after {
-            content: ''; flex: 1;
-            height: 1px; background: var(--border);
-        }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
+        /* ── Auth link ── */
         .auth-link {
             text-align: center;
-            font-size: 0.875rem;
+            font-size: 0.855rem;
             color: var(--text-muted);
             margin-top: 1.25rem;
         }
-        .auth-link a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-        }
+        .auth-link a { color: var(--purple); text-decoration: none; font-weight: 700; }
         .auth-link a:hover { text-decoration: underline; }
 
-        /* Messages */
-        .alert {
-            padding: 11px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
+        /* ── Alerts ── */
+        .alert { padding: 10px 14px; border-radius: var(--r-sm); font-size: 0.845rem; margin-bottom: 1rem; }
+        .alert-error, .alert-danger { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); color: #7f1d1d; }
+        .alert-success { background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.25); color: #065f46; }
+        .alert-info { background: var(--purple-s); border: 1px solid rgba(133,114,228,0.25); color: var(--purple-d); }
+        .alert-warning { background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.2); color: #78350f; }
+
+        /* ── Footer ── */
+        .auth-footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
         }
-        .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-        .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
 
         /* ── Animations ── */
-        @keyframes fadeInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        .auth-box { animation: fadeInRight 0.4s ease; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
 
-        @media (max-width: 900px) {
-            body { grid-template-columns: 1fr; }
-            .auth-visual { display: none; }
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .auth-topnav { padding: 0.875rem 1rem; }
+            .auth-card { padding: 1.75rem 1.25rem; }
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<!-- Left: Visual Panel -->
-<div class="auth-visual">
-    <div class="auth-visual-grid"></div>
-    <div class="brand">
-        <div class="brand-icon">⚡</div>
-        <span class="brand-name">Smart<span>Navbat</span></span>
-    </div>
-    <div class="auth-hero">
-        <h2>Navbatni<br><span>aqlli boshqaring</span></h2>
-        <p>Biznesingizni samarali yuritish uchun<br>zamonaviy navbat boshqaruv tizimi.</p>
-    </div>
-    <div class="feature-list">
-        <div class="feature-item">
-            <div class="feature-icon">⚡</div>
-            <span>Real-time navbat kuzatuvi</span>
-        </div>
-        <div class="feature-item">
-            <div class="feature-icon">📊</div>
-            <span>Xizmat statistikasi va tahlil</span>
-        </div>
-        <div class="feature-item">
-            <div class="feature-icon">🤖</div>
-            <span>Telegram bot orqali integratsiya</span>
-        </div>
-        <div class="feature-item">
-            <div class="feature-icon">🏢</div>
-            <span>Ko'p filiallar boshqaruvi</span>
+<!-- Top nav -->
+<nav class="auth-topnav">
+    <a href="{% url 'client:home' %}" class="auth-topnav-brand">
+        <div class="auth-topnav-brand-icon">⚡</div>
+        <span class="auth-topnav-brand-name">Tartib<span>li</span></span>
+    </a>
+    <a href="{% url 'client:home' %}" class="auth-topnav-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Bosh sahifa
+    </a>
+</nav>
+
+<!-- Page body -->
+<div class="auth-page-body">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
         </div>
     </div>
 </div>
 
-<!-- Right: Form Panel -->
-<div class="auth-form-panel">
-    <div class="auth-box">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        {% block content %}{% endblock %}
-    </div>
-</div>
+<!-- Footer -->
+<footer class="auth-footer">
+    © 2025 Tartibli — Aqlli navbat tizimi
+</footer>
 
 {% block extra_js %}{% endblock %}
 </body>

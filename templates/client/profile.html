@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+
+{% block full_page %}
+<main class="main-content" style="max-width:560px;margin:0 auto;padding:2rem 1.5rem">
+
+    <!-- Avatar + name -->
+    <div class="fade-in" style="text-align:center;margin-bottom:1.75rem">
+        <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 1rem;box-shadow:0 0 32px rgba(133,114,228,0.25)">👤</div>
+        <h1 style="font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;color:var(--text)">
+            {{ user.first_name|default:"Foydalanuvchi" }} {{ user.last_name }}
+        </h1>
+        <p style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">{{ user.phone }}</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-2 fade-in-2" style="margin-bottom:1.5rem">
+        <div class="stat-card" style="text-align:center;--accent:var(--purple)">
+            <div class="stat-value" style="font-size:2.2rem">{{ total_tickets }}</div>
+            <div class="stat-label">Jami navbatlar</div>
+        </div>
+        <div class="stat-card" style="text-align:center;--accent:var(--mint-d)">
+            <div class="stat-value" style="font-size:2.2rem">{{ saved_minutes }}</div>
+            <div class="stat-label">Tejlagan vaqt (daq)</div>
+        </div>
+    </div>
+
+    <!-- Settings list -->
+    <div class="fade-in-3" style="margin-bottom:1.25rem">
+        <h2 style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.75rem">Sozlamalar</h2>
+        <div class="card" style="padding:0;overflow:hidden">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:11px">
+                    <span style="font-size:18px">🔔</span>
+                    <span style="font-weight:600;font-size:0.875rem;color:var(--text)">Bildirishnomalar</span>
+                </div>
+                <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer">
+                    <input type="checkbox" checked style="opacity:0;width:0;height:0">
+                    <span style="position:absolute;inset:0;background:var(--purple);border-radius:50px;transition:0.3s"></span>
+                    <span style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:0.3s;transform:translateX(18px)"></span>
+                </label>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:11px">
+                    <span style="font-size:18px">🌐</span>
+                    <span style="font-weight:600;font-size:0.875rem;color:var(--text)">Til</span>
+                </div>
+                <span style="font-size:0.82rem;color:var(--text-muted);font-weight:500">O'zbek 🇺🇿</span>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:11px">
+                    <span style="font-size:18px">🔒</span>
+                    <span style="font-weight:600;font-size:0.875rem;color:var(--text)">Xavfsizlik</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <a href="{% url 'client:help' %}" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;text-decoration:none">
+                <div style="display:flex;align-items:center;gap:11px">
+                    <span style="font-size:18px">💬</span>
+                    <span style="font-weight:600;font-size:0.875rem;color:var(--text)">Qo'llab-quvvatlash</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- Telegram connect -->
+    <div class="fade-in-3" style="margin-bottom:1.25rem">
+        <a href="https://t.me/{{ TELEGRAM_BOT_USERNAME }}" target="_blank"
+           class="card"
+           style="display:flex;align-items:center;gap:12px;padding:14px 18px;text-decoration:none;background:linear-gradient(135deg,rgba(133,114,228,0.07),rgba(189,81,130,0.05));border:1.5px solid var(--purple);transition:all 0.18s"
+           onmouseover="this.style.background='var(--purple-s)'"
+           onmouseout="this.style.background='linear-gradient(135deg,rgba(133,114,228,0.07),rgba(189,81,130,0.05))'">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--purple)"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.247l-2.04 9.608c-.15.672-.543.836-1.098.52l-3.04-2.24-1.47 1.415c-.162.162-.298.298-.612.298l.218-3.09 5.634-5.09c.245-.218-.053-.338-.38-.12L7.26 14.36l-2.988-.937c-.65-.203-.663-.65.135-.962l11.664-4.497c.54-.196 1.013.12.491.283z"/></svg>
+            <div style="flex:1">
+                <div style="font-weight:700;font-size:0.875rem;color:var(--text)">Telegram bot</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Bildirishnomalar olish uchun ulaning</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+    </div>
+
+    <!-- Logout -->
+    <div class="fade-in-4">
+        <a href="{% url 'auth:logout' %}"
+           class="btn btn-rose btn-block"
+           style="font-size:0.9rem;padding:14px;border-radius:var(--r)"
+           onclick="return confirm('Tizimdan chiqishni tasdiqlaysizmi?')">
+            Chiqish
+        </a>
+    </div>
+
+</main>
+{% endblock %}

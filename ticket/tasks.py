@@ -25,6 +25,41 @@ def send_telegram_message(chat_id: str, text: str):
 
 
 @shared_task(ignore_result=True)
+def notify_3_remaining(service_id: int):
+    """When the queue shrinks, notify whoever now has exactly 3 people ahead."""
+    from ticket.models import Ticket, StatusTypes
+    from botapp.models import BotUser
+
+    # Ordered queue for this service (VIP first, then FIFO)
+    waiting = list(
+        Ticket.objects
+        .filter(service_id=service_id, status=StatusTypes.WAITING)
+        .select_related('customer', 'service__branch')
+        .order_by('-is_vip', 'created_at')
+    )
+
+    # Ticket at index 3 (0-based) has exactly 3 people ahead of it
+    if len(waiting) <= 3:
+        return
+
+    ticket = waiting[3]
+    if not ticket.customer:
+        return
+
+    bot_user = BotUser.objects.filter(phone_number=ticket.customer.phone).first()
+    if not bot_user:
+        return
+
+    lang = bot_user.language or 'uz'
+    from bot.texts import t as tx
+    text = tx(lang, 'notify_3',
+              num=ticket.number,
+              svc=ticket.service.title,
+              branch=ticket.service.branch.title)
+    send_telegram_message.delay(bot_user.user_id, text)
+
+
+@shared_task(ignore_result=True)
 def notify_ticket_called(ticket_id: int):
     """Notify client via Telegram when their ticket is called."""
     from ticket.models import Ticket
@@ -46,13 +81,12 @@ def notify_ticket_called(ticket_id: int):
     if not bot_user:
         return
 
-    text = (
-        f"🔔 <b>Navbatingiz keldi!</b>\n\n"
-        f"🎫 Chipta: <code>{ticket.number}</code>\n"
-        f"💼 {ticket.service.title}\n"
-        f"📍 {ticket.service.branch.title}\n\n"
-        f"Iltimos, <b>darhol</b> operatorga yaqinlashing!"
-    )
+    lang = bot_user.language if hasattr(bot_user, 'language') else 'uz'
+    from bot.texts import t as tx
+    text = tx(lang, 'notify_called',
+              num=ticket.number,
+              svc=ticket.service.title,
+              branch=ticket.service.branch.title)
     send_telegram_message.delay(bot_user.user_id, text)
 
 

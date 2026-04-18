@@ -77,11 +77,12 @@ services:
     command: python -m bot.main
 
   # Nginx — static files + reverse proxy to Daphne
+  # Only this service exposes a port externally; all others stay on the internal Docker network.
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"        # Host:8080 → Nginx:80. Change host port as needed via .env
     depends_on:
       - web
     volumes:

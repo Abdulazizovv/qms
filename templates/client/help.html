@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Yordam — AI Yordamchi{% endblock %}
+
+{% block full_page %}
+<main class="main-content" style="max-width:640px;margin:0 auto;padding:2rem 1.5rem">
+
+    <!-- Header -->
+    <div class="fade-in" style="text-align:center;margin-bottom:1.75rem">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 1rem;box-shadow:0 0 36px rgba(133,114,228,0.25)">🤖</div>
+        <h1 style="font-size:1.45rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)">AI Yordamchi</h1>
+        <p style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Savolingizni yozing, tezkor javob oling</p>
+    </div>
+
+    <!-- Chat area -->
+    <div class="fade-in-2" id="chat-box" style="min-height:320px;margin-bottom:1.25rem;display:flex;flex-direction:column;gap:12px">
+
+        <!-- Welcome message -->
+        <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0 var(--r) var(--r) var(--r);padding:12px 16px;max-width:85%;box-shadow:var(--sh)">
+                <p style="font-size:0.875rem;color:var(--text);line-height:1.6">Salom! Men Tartibli AI yordamchisiman. Navbat tizimi haqida savollaringizga javob beraman. Qanday yordam kerak? 😊</p>
+            </div>
+        </div>
+
+        {% if user_question %}
+        <!-- User question -->
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-direction:row-reverse">
+            <div style="width:36px;height:36px;background:var(--purple-s);border:2px solid var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>
+            <div style="background:var(--purple);border-radius:var(--r) 0 var(--r) var(--r);padding:12px 16px;max-width:85%;box-shadow:var(--sh)">
+                <p style="font-size:0.875rem;color:#fff;line-height:1.6">{{ user_question }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if ai_response %}
+        <!-- AI response -->
+        <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--purple),var(--rose));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0 var(--r) var(--r) var(--r);padding:12px 16px;max-width:85%;box-shadow:var(--sh)">
+                <p style="font-size:0.875rem;color:var(--text);line-height:1.6">{{ ai_response }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick questions -->
+    <div class="fade-in-2" style="margin-bottom:1.25rem">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px">Tez savollar</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="quick-q" style="padding:7px 14px;background:var(--purple-s);border:1.5px solid var(--purple);border-radius:50px;font-size:0.78rem;font-weight:600;color:var(--purple);cursor:pointer;transition:all 0.15s"
+                    onmouseover="this.style.background='var(--purple)';this.style.color='#fff'"
+                    onmouseout="this.style.background='var(--purple-s)';this.style.color='var(--purple)'">
+                Navbat qanday olinadi?
+            </button>
+            <button class="quick-q" style="padding:7px 14px;background:var(--rose-s);border:1.5px solid var(--rose);border-radius:50px;font-size:0.78rem;font-weight:600;color:var(--rose);cursor:pointer;transition:all 0.15s"
+                    onmouseover="this.style.background='var(--rose)';this.style.color='#fff'"
+                    onmouseout="this.style.background='var(--rose-s)';this.style.color='var(--rose)'">
+                Navbatdan qanday chiqiladi?
+            </button>
+            <button class="quick-q" style="padding:7px 14px;background:var(--mint-s);border:1.5px solid var(--mint-d);border-radius:50px;font-size:0.78rem;font-weight:600;color:var(--mint-d);cursor:pointer;transition:all 0.15s"
+                    onmouseover="this.style.background='var(--mint-d)';this.style.color='#fff'"
+                    onmouseout="this.style.background='var(--mint-s)';this.style.color='var(--mint-d)'">
+                Ish vaqtlarini qanday bilish mumkin?
+            </button>
+            <button class="quick-q" style="padding:7px 14px;background:var(--bg-hover);border:1.5px solid var(--border-d);border-radius:50px;font-size:0.78rem;font-weight:600;color:var(--text-dim);cursor:pointer;transition:all 0.15s"
+                    onmouseover="this.style.borderColor='var(--purple)';this.style.color='var(--purple)'"
+                    onmouseout="this.style.borderColor='var(--border-d)';this.style.color='var(--text-dim)'">
+                Chipta statusini qanday ko'rish mumkin?
+            </button>
+        </div>
+    </div>
+
+    <!-- Input form -->
+    <div class="card fade-in-3" style="padding:1rem">
+        <form method="post" id="help-form">
+            {% csrf_token %}
+            <div style="display:flex;gap:10px;align-items:flex-end">
+                <div style="flex:1">
+                    <textarea id="question-input" name="question" rows="2" class="form-control"
+                              placeholder="Savolingizni yozing..."
+                              style="resize:none;font-size:0.9rem;padding:11px 14px">{% if user_question %}{{ user_question }}{% endif %}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding:11px 20px;height:fit-content;flex-shrink:0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+<script>
+// Quick question buttons fill textarea
+document.querySelectorAll('.quick-q').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.getElementById('question-input').value = this.textContent.trim();
+        document.getElementById('help-form').submit();
+    });
+});
+// Scroll to bottom of chat
+(function() {
+    var cb = document.getElementById('chat-box');
+    if (cb) cb.scrollTop = cb.scrollHeight;
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Sessiyalar — Tartibli{% endblock %}
+
+{% block sidebar %}
+{% include "dashboard/_sidebar.html" with active="sessions" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex-between fade-in mb-2" style="flex-wrap:wrap;gap:1rem">
+    <div class="page-header" style="margin-bottom:0">
+        <h1>Sessiyalar</h1>
+        <p>Operator ish sessiyalari va statistikasi</p>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="grid fade-in-2" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.75rem">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_sessions }}</div>
+        <div class="stat-label">Jami sessiyalar</div>
+    </div>
+    <div class="stat-card" style="--accent:#10b981">
+        <div class="stat-value">{{ active_count }}</div>
+        <div class="stat-label">Bugun faol</div>
+    </div>
+    <div class="stat-card" style="--accent:#f59e0b">
+        <div class="stat-value">{{ total_tickets_sum }}</div>
+        <div class="stat-label">Jami chiptalar</div>
+    </div>
+</div>
+
+<!-- Filter bar -->
+<div class="card fade-in-2" style="margin-bottom:1.5rem;padding:1rem 1.25rem">
+    <form method="GET" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+        <div style="flex:1;min-width:160px">
+            <label class="form-label">Biznes</label>
+            <select name="business" class="form-control" onchange="this.form.submit()">
+                <option value="">Barchasi</option>
+                {% for biz in businesses %}
+                <option value="{{ biz.pk }}" {% if filters.business == biz.pk|stringformat:"s" %}selected{% endif %}>{{ biz.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex:1;min-width:160px">
+            <label class="form-label">Filial</label>
+            <select name="branch" class="form-control" onchange="this.form.submit()">
+                <option value="">Barchasi</option>
+                {% for br in branches %}
+                <option value="{{ br.pk }}" {% if filters.branch == br.pk|stringformat:"s" %}selected{% endif %}>{{ br.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex:1;min-width:130px">
+            <label class="form-label">Holat</label>
+            <select name="status" class="form-control" onchange="this.form.submit()">
+                <option value="">Barchasi</option>
+                <option value="active"  {% if filters.status == 'active' %}selected{% endif %}>Faol</option>
+                <option value="paused"  {% if filters.status == 'paused' %}selected{% endif %}>Tanaffus</option>
+                <option value="closed"  {% if filters.status == 'closed' %}selected{% endif %}>Yopilgan</option>
+            </select>
+        </div>
+        <div style="flex:1;min-width:130px">
+            <label class="form-label">Dan</label>
+            <input type="date" name="date_from" class="form-control" value="{{ filters.date_from|default:'' }}" onchange="this.form.submit()">
+        </div>
+        <div style="flex:1;min-width:130px">
+            <label class="form-label">Gacha</label>
+            <input type="date" name="date_to" class="form-control" value="{{ filters.date_to|default:'' }}" onchange="this.form.submit()">
+        </div>
+        <div style="flex:1;min-width:150px">
+            <label class="form-label">Saralash</label>
+            <select name="order" class="form-control" onchange="this.form.submit()">
+                <option value="-date"          {% if filters.order == '-date' %}selected{% endif %}>Sana (yangi)</option>
+                <option value="date"           {% if filters.order == 'date' %}selected{% endif %}>Sana (eski)</option>
+                <option value="-total_tickets" {% if filters.order == '-total_tickets' %}selected{% endif %}>Ko'p chiptali</option>
+                <option value="-done_tickets"  {% if filters.order == '-done_tickets' %}selected{% endif %}>Ko'p bajarilgan</option>
+            </select>
+        </div>
+        {% if filters.business or filters.branch or filters.date_from or filters.date_to or filters.status %}
+        <a href="{% url 'business:sessions' %}" class="btn btn-ghost btn-sm" style="align-self:flex-end">✕ Tozalash</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Sessions table -->
+<div class="fade-in-3">
+    {% if sessions %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sana</th>
+                    <th>Operator</th>
+                    <th>Xizmat</th>
+                    <th>Filial</th>
+                    <th>Holat</th>
+                    <th>Jami</th>
+                    <th>Bajarildi</th>
+                    <th>Boshlangan</th>
+                    <th>Yopilgan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td style="font-family:var(--mono);color:var(--text-muted);font-size:0.8rem">{{ s.pk }}</td>
+                    <td style="font-family:var(--mono);font-size:0.85rem">{{ s.date }}</td>
+                    <td style="font-weight:600">{{ s.operator.user.first_name|default:"—" }}<br><span style="font-family:var(--mono);font-size:0.73rem;color:var(--text-muted)">Stol {{ s.operator.desk_number }}</span></td>
+                    <td>{{ s.service.title }}</td>
+                    <td style="color:var(--text-muted);font-size:0.85rem">{{ s.service.branch.title }}</td>
+                    <td>
+                        {% if s.status == 'active' %}<span class="badge badge-active">Faol</span>
+                        {% elif s.status == 'paused' %}<span class="badge badge-waiting">Tanaffus</span>
+                        {% else %}<span class="badge badge-inactive">Yopilgan</span>{% endif %}
+                    </td>
+                    <td><span style="font-family:var(--mono);font-weight:700">{{ s.total_tickets }}</span></td>
+                    <td><span style="font-family:var(--mono);color:var(--success);font-weight:600">{{ s.done_tickets }}</span></td>
+                    <td style="font-size:0.8rem;color:var(--text-muted);font-family:var(--mono)">
+                        {% if s.started_at %}{{ s.started_at|date:"H:i" }}{% else %}—{% endif %}
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--text-muted);font-family:var(--mono)">
+                        {% if s.closed_at %}{{ s.closed_at|date:"H:i" }}{% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center" style="padding:3.5rem 2rem">
+        <div style="font-size:3rem;margin-bottom:1rem">📋</div>
+        <h3 style="font-weight:700;margin-bottom:0.5rem">Sessiya topilmadi</h3>
+        <p class="text-muted" style="font-size:0.875rem">Qidiruv shartlarini o'zgartiring yoki operator ishni boshlashini kuting</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
