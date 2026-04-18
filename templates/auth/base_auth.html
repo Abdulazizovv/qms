@@ -57,11 +57,11 @@
         }
         .auth-topnav-brand-icon {
             width: 34px; height: 34px;
-            background: linear-gradient(135deg, var(--purple), var(--rose));
             border-radius: 9px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
+            overflow: hidden;
         }
+        .auth-topnav-brand-icon img { width: 34px; height: 34px; object-fit: contain; }
         .auth-topnav-brand-name {
             font-size: 1.1rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text);
         }
@@ -261,7 +261,7 @@
 <!-- Top nav -->
 <nav class="auth-topnav">
     <a href="{% url 'client:home' %}" class="auth-topnav-brand">
-        <div class="auth-topnav-brand-icon">⚡</div>
+        <div class="auth-topnav-brand-icon"><img src="https://raw.githubusercontent.com/Abdulazizovv/fayllar/bbfdc66d8c5cf4ed0edffec3a9f7b34327be2cc0/logo.svg" alt="Tartibly"></div>
         <span class="auth-topnav-brand-name">Tartib<span>li</span></span>
     </a>
     <a href="{% url 'client:home' %}" class="auth-topnav-back">
